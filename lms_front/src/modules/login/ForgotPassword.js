@@ -446,29 +446,12 @@ export default function ForgotPassword() {
 
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/api/auth/request-password-reset/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: form.email,
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        toast.success('Password reset token sent! Use the token below for demo.');
-        setShowOtpField(true);
-        // For demo purposes, show the token
-        setOtp(data.token);
-      } else {
-        const errorData = await response.json();
-        toast.error(errorData.error || 'Failed to send reset token');
-      }
+      // Simulate API call to send OTP
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      toast.success('OTP sent to your email!');
+      setShowOtpField(true);
     } catch (error) {
-      console.error('Send OTP error:', error);
-      toast.error('Network error. Please try again.');
+      toast.error('Failed to send OTP. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -476,21 +459,24 @@ export default function ForgotPassword() {
 
   const verifyOtp = async () => {
     if (!otp) {
-      toast.error('Please enter the token!');
+      toast.error('Please enter the OTP!');
       return;
     }
 
     setIsLoading(true);
     try {
-      // For demo purposes, we'll just verify the token format
-      if (otp.length >= 32) {
-        toast.success('Token verified successfully!');
+      // Simulate OTP verification
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // In a real app, you would verify the OTP with your backend
+      if (otp === '123456') { // Default OTP for demo purposes
+        toast.success('Email verified successfully!');
         setEmailVerified(true);
       } else {
-        throw new Error('Invalid token format');
+        throw new Error('Invalid OTP');
       }
     } catch (error) {
-      toast.error(error.message || 'Token verification failed');
+      toast.error(error.message || 'OTP verification failed');
     } finally {
       setIsLoading(false);
     }
@@ -502,7 +488,7 @@ export default function ForgotPassword() {
 
     // Validate form
     if (!emailVerified) {
-      toast.error('Please verify your token first!');
+      toast.error('Please verify your email first!');
       setIsLoading(false);
       return;
     }
@@ -513,46 +499,32 @@ export default function ForgotPassword() {
       return;
     }
 
-    if (form.newPassword.length < 6) {
-      toast.error('Password must be at least 6 characters!');
+    if (form.newPassword.length < 8) {
+      toast.error('Password must be at least 8 characters!');
       setIsLoading(false);
       return;
     }
 
     try {
-      const response = await fetch('http://localhost:8000/api/auth/confirm-password-reset/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          token: otp,
-          new_password: form.newPassword,
-          confirm_password: form.confirmPassword,
-        }),
+      // Simulate API call to reset password
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // On successful reset
+      setResetSuccess(true);
+      toast.success('Password reset successfully!');
+
+      // Reset form
+      setForm({
+        email: '',
+        newPassword: '',
+        confirmPassword: ''
       });
+      setOtp('');
+      setEmailVerified(false);
+      setShowOtpField(false);
 
-      if (response.ok) {
-        const data = await response.json();
-        setResetSuccess(true);
-        toast.success('Password reset successfully!');
-
-        // Reset form
-        setForm({
-          email: '',
-          newPassword: '',
-          confirmPassword: ''
-        });
-        setOtp('');
-        setEmailVerified(false);
-        setShowOtpField(false);
-      } else {
-        const errorData = await response.json();
-        toast.error(errorData.error || 'Failed to reset password');
-      }
     } catch (error) {
-      console.error('Reset password error:', error);
-      toast.error('Network error. Please try again.');
+      toast.error(`Failed to reset password: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -767,7 +739,7 @@ export default function ForgotPassword() {
                   initial="hidden"
                   animate="visible"
                 >
-                  <label className="form-label fw-medium" style={{ color: '#2D5D7B' }}>Reset Token</label>
+                  <label className="form-label fw-medium" style={{ color: '#2D5D7B' }}>OTP Verification</label>
                   <div className="input-group">
                     <span className="input-group-text" style={{ 
                       background: 'linear-gradient(to right, #2D5D7B, #A62D69)',
@@ -781,7 +753,8 @@ export default function ForgotPassword() {
                       className="form-control py-2 px-3 rounded-end"
                       value={otp}
                       onChange={handleOtpChange}
-                      placeholder="Enter reset token"
+                      placeholder="Enter 6-digit OTP"
+                      maxLength="6"
                       style={{
                         border: '1px solid #dee2e6',
                         borderLeft: 'none',
@@ -803,7 +776,7 @@ export default function ForgotPassword() {
                       {isLoading ? 'Verifying...' : 'Verify'}
                     </button>
                   </div>
-                  <div className="form-text" style={{ color: '#6c757d' }}>Token will be auto-filled after sending reset request</div>
+                  <div className="form-text" style={{ color: '#6c757d' }}>Demo OTP: 123456</div>
                 </motion.div>
               )}
 

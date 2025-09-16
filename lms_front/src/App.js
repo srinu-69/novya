@@ -1,6 +1,7 @@
 
 // import React from 'react';
 // import { Routes, Route, Navigate, useLocation, Link } from 'react-router-dom';
+
 // // Home Modules
 // import Navbar from './modules/home/Navbar';
 // import HeroSection from './modules/home/HeroSection';
@@ -18,12 +19,12 @@
 // import ProfilePage from './modules/home/ProfilePage';
 // import FloatingChatBot from './modules/home/FloatingChatBot';
 // import AIDemo from './modules/home/AIDemo';
- 
+
 // // Auth Modules
 // import Login from './modules/login/Login';
 // import Signup from './modules/login/Signup';
 // import ForgotPassword from './modules/login/ForgotPassword';
- 
+
 // // Student Modules
 // import Navbarrr from './modules/student/Navbarrr';
 // import Home1 from './modules/student/Home1';
@@ -33,14 +34,13 @@
 // import Career from './modules/student/Career';
 // import Mentorship from './modules/student/Mentorship';
 // import Chatbox from './modules/student/Chatbox';
- 
-// // ✅ New student pages
+// import PracticeGrade8 from './modules/student/PracticeGrade8';
+// import PracticeGrade9 from './modules/student/PracticeGrade9';
+// import PracticeGrade10 from './modules/student/PracticeGrade10';
 // import Quizzes from './modules/student/Quizzes';
-// // import PDFs from './modules/student/PDFs';
 // import Recordings from './modules/student/Recordings';
-// // Import the new EventRegistrationPage
-// import EventRegistrationPage from './modules/student/EventRegistrationPage'; // <--- ADD THIS LINE
- 
+// import EventRegistrationPage from './modules/student/EventRegistrationPage';
+
 // // Parent Modules
 // import ParentDashboard from './modules/parent/ParentDashboard';
 // import Attendance from './modules/parent/Attendance';
@@ -50,9 +50,9 @@
 // import MockTestReports from './modules/parent/MockTestReports';
 // import Progress from './modules/parent/Progress';
 // import StudyPlanner from './modules/parent/StudyPlanner';
-// import UserDetailsPage from './modules/student/UserDetailsPage'; // <--- ADD THIS LINE 
+
 // import './modules/parent/styles.css';
- 
+
 // function LandingPage() {
 //   return (
 //     <>
@@ -67,33 +67,41 @@
 //     </>
 //   );
 // }
- 
+
 // const ProtectedRoute = ({ children }) => {
 //   const isAuthenticated = !!localStorage.getItem('userToken');
 //   return isAuthenticated ? children : <Navigate to="/login" replace />;
 // };
- 
+
 // const RoleRoute = ({ children, requiredRole }) => {
 //   const userRole = localStorage.getItem('userRole');
 //   if (!userRole) return <Navigate to="/login" replace />;
 //   return userRole === requiredRole ? children : <Navigate to="/unauthorized" replace />;
 // };
- 
+
 // function App() {
 //   const location = useLocation();
- 
-//   // Update this to include the new event registration path for student navbar
+
 //   const hideNavbarFooter = ['/login', '/signup', '/forgot-password', '/unauthorized'].includes(location.pathname);
-//   const isStudentPage = ['/learn', '/practice', '/career', '/mentorship', '/student/dashboard', '/lesson', '/events'].some(path => // <--- UPDATED THIS LINE
-//     location.pathname.startsWith(path)
-//   );
+//   const isStudentPage = [
+//     '/learn',
+//     '/practice',
+//     '/career',
+//     '/mentorship',
+//     '/student/dashboard',
+//     '/lesson',
+//     '/events',
+//     '/practice-grade8',
+//     '/practice-grade9',
+//     '/practice-grade10'
+//   ].some(path => location.pathname.startsWith(path));
 //   const isParentPage = location.pathname.startsWith('/parent');
- 
+
 //   return (
 //     <div className="app-container">
 //       {!hideNavbarFooter && !isStudentPage && !isParentPage && <Navbar />}
 //       {isStudentPage && <Navbarrr />}
- 
+
 //       <Routes>
 //         {/* Public Routes */}
 //         <Route path="/" element={<LandingPage />} />
@@ -121,24 +129,46 @@
 //             </div>
 //           }
 //         />
- 
+
 //         {/* Student Routes */}
-       
-// // In App.js, add this route to the student routes section
-// <Route path="/student/details" element={
-//   <ProtectedRoute><RoleRoute requiredRole="student"><UserDetailsPage /></RoleRoute></ProtectedRoute>
-// } />
 //         <Route path="/student/dashboard" element={
 //           <ProtectedRoute><RoleRoute requiredRole="student"><Home1 /></RoleRoute></ProtectedRoute>
 //         } />
+
+//         {/* Learn routes for all classes (7-10) and the general /learn route */}
 //         <Route path="/learn" element={
 //           <ProtectedRoute><RoleRoute requiredRole="student"><Learn /></RoleRoute></ProtectedRoute>
 //         } />
-//         <Route path="/lesson/:subject/:chapterNumber" element={
+//         <Route path="/learn/class7" element={
+//           <ProtectedRoute><RoleRoute requiredRole="student"><Learn /></RoleRoute></ProtectedRoute>
+//         } />
+//         <Route path="/learn/class8" element={
+//           <ProtectedRoute><RoleRoute requiredRole="student"><Learn /></RoleRoute></ProtectedRoute>
+//         } />
+//         <Route path="/learn/class9" element={
+//           <ProtectedRoute><RoleRoute requiredRole="student"><Learn /></RoleRoute></ProtectedRoute>
+//         } />
+//         <Route path="/learn/class10" element={
+//           <ProtectedRoute><RoleRoute requiredRole="student"><Learn /></RoleRoute></ProtectedRoute>
+//         } />
+
+//         {/* Lesson routes for all classes */}
+//         <Route path="/lesson/:class/:subject/:chapterNumber" element={
 //           <ProtectedRoute><RoleRoute requiredRole="student"><LessonPage /></RoleRoute></ProtectedRoute>
 //         } />
+
 //         <Route path="/practice" element={
 //           <ProtectedRoute><RoleRoute requiredRole="student"><Practice /></RoleRoute></ProtectedRoute>
+//         } />
+//         {/* New Practice Routes */}
+//         <Route path="/practice-grade8" element={
+//           <ProtectedRoute><RoleRoute requiredRole="student"><PracticeGrade8 /></RoleRoute></ProtectedRoute>
+//         } />
+//         <Route path="/practice-grade9" element={
+//           <ProtectedRoute><RoleRoute requiredRole="student"><PracticeGrade9 /></RoleRoute></ProtectedRoute>
+//         } />
+//         <Route path="/practice-grade10" element={
+//           <ProtectedRoute><RoleRoute requiredRole="student"><PracticeGrade10 /></RoleRoute></ProtectedRoute>
 //         } />
 //         <Route path="/career" element={
 //           <ProtectedRoute><RoleRoute requiredRole="student"><Career /></RoleRoute></ProtectedRoute>
@@ -147,21 +177,18 @@
 //           <ProtectedRoute><RoleRoute requiredRole="student"><Mentorship /></RoleRoute></ProtectedRoute>
 //         } />
 //         {/* Route for Event Registration Page */}
-//         <Route path="/events/:eventId/register" element={ // <--- ADD THIS BLOCK
+//         <Route path="/events/:eventId/register" element={
 //           <ProtectedRoute><RoleRoute requiredRole="student"><EventRegistrationPage /></RoleRoute></ProtectedRoute>
 //         } />
- 
-//         {/* ✅ New Learn subpages */}
+
+//         {/* New Learn subpages */}
 //         <Route path="/learn/quizzes" element={
 //           <ProtectedRoute><RoleRoute requiredRole="student"><Quizzes /></RoleRoute></ProtectedRoute>
 //         } />
-//         {/* <Route path="/learn/pdfs" element={
-//           <ProtectedRoute><RoleRoute requiredRole="student"><PDFs /></RoleRoute></ProtectedRoute>
-//         } /> */}
 //         <Route path="/learn/recordings" element={
 //           <ProtectedRoute><RoleRoute requiredRole="student"><Recordings /></RoleRoute></ProtectedRoute>
 //         } />
- 
+
 //         {/* Parent Routes */}
 //         <Route path="/parent/dashboard" element={
 //           <ProtectedRoute><RoleRoute requiredRole="parent"><ParentDashboard /></RoleRoute></ProtectedRoute>
@@ -187,13 +214,13 @@
 //         <Route path="/parent/study-planner" element={
 //           <ProtectedRoute><RoleRoute requiredRole="parent"><StudyPlanner /></RoleRoute></ProtectedRoute>
 //         } />
- 
+
 //         {/* Catch All */}
 //         <Route path="*" element={<Navigate to="/" replace />} />
 //       </Routes>
- 
+
 //       {!hideNavbarFooter && !isStudentPage && !isParentPage && <Footer />}
- 
+
 //       {isStudentPage && (
 //         <div className="student-chatbox-container">
 //           <Chatbox />
@@ -202,14 +229,8 @@
 //     </div>
 //   );
 // }
+
 // export default App;
- 
-
-
-
-
-
-
 
 
 
@@ -219,6 +240,7 @@
 
 import React from 'react';
 import { Routes, Route, Navigate, useLocation, Link } from 'react-router-dom';
+
 // Home Modules
 import Navbar from './modules/home/Navbar';
 import HeroSection from './modules/home/HeroSection';
@@ -251,27 +273,23 @@ import Practice from './modules/student/Practice';
 import Career from './modules/student/Career';
 import Mentorship from './modules/student/Mentorship';
 import Chatbox from './modules/student/Chatbox';
-
-// ✅ New student pages
 import Quizzes from './modules/student/Quizzes';
-// import PDFs from './modules/student/PDFs';
 import Recordings from './modules/student/Recordings';
-// Import the new EventRegistrationPage
 import EventRegistrationPage from './modules/student/EventRegistrationPage';
-import UserDetailsPage from './modules/student/UserDetailsPage';
 
 // Parent Modules
 import ParentDashboard from './modules/parent/ParentDashboard';
 import Attendance from './modules/parent/Attendance';
 import ChildProfile from './modules/parent/ChildProfile';
-import Fees from './modules/parent/Fees';
-import HomeWork from './modules/parent/HomeWork';
+import Homework from './modules/parent/HomeWork';
 import MockTestReports from './modules/parent/MockTestReports';
 import Progress from './modules/parent/Progress';
 import StudyPlanner from './modules/parent/StudyPlanner';
-
+import ContactUs from './modules/parent/ContactUs';
 import './modules/parent/styles.css';
-
+import DashboardHome from './modules/parent/DashboardHome';
+import IntegrationTest from './components/IntegrationTest';
+import UserDetailsPage from './modules/student/UserDetailsPage';
 function LandingPage() {
   return (
     <>
@@ -288,12 +306,16 @@ function LandingPage() {
 }
 
 const ProtectedRoute = ({ children }) => {
-  const isAuthenticated = !!localStorage.getItem('userToken');
+  const accessToken = localStorage.getItem('access_token');
+  const userToken = localStorage.getItem('userToken');
+  const isAuthenticated = !!accessToken || !!userToken;
+
   return isAuthenticated ? children : <Navigate to="/login" replace />;
 };
 
 const RoleRoute = ({ children, requiredRole }) => {
   const userRole = localStorage.getItem('userRole');
+
   if (!userRole) return <Navigate to="/login" replace />;
   return userRole === requiredRole ? children : <Navigate to="/unauthorized" replace />;
 };
@@ -301,11 +323,24 @@ const RoleRoute = ({ children, requiredRole }) => {
 function App() {
   const location = useLocation();
 
-  // Update this to include the new event registration path for student navbar
-  const hideNavbarFooter = ['/login', '/signup', '/forgot-password', '/unauthorized', '/student/details'].includes(location.pathname);
-  const isStudentPage = ['/learn', '/practice', '/career', '/mentorship', '/student/dashboard', '/lesson', '/events'].some(path =>
-    location.pathname.startsWith(path)
-  );
+  const hideNavbarFooter = [
+    '/login',
+    '/signup',
+    '/forgot-password',
+    '/unauthorized'
+  ].includes(location.pathname);
+
+  const isStudentPage = [
+    '/learn',
+    '/practice',
+    '/career',
+    '/mentorship',
+    '/student/dashboard',
+    '/student/profile',
+    '/lesson',
+    '/events'
+  ].some(path => location.pathname.startsWith(path));
+
   const isParentPage = location.pathname.startsWith('/parent');
 
   return (
@@ -327,6 +362,7 @@ function App() {
         <Route path="/free-demo" element={<FreeDemo />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/ai-demo" element={<AIDemo />} />
+        <Route path="/integration-test" element={<IntegrationTest />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -342,75 +378,129 @@ function App() {
         />
 
         {/* Student Routes */}
-        <Route path="/student/details" element={
-          <ProtectedRoute><RoleRoute requiredRole="student"><UserDetailsPage /></RoleRoute></ProtectedRoute>
-        } />
         <Route path="/student/dashboard" element={
-          <ProtectedRoute><RoleRoute requiredRole="student"><Home1 /></RoleRoute></ProtectedRoute>
+          <ProtectedRoute>
+            <RoleRoute requiredRole="student">
+              <Home1 />
+            </RoleRoute>
+          </ProtectedRoute>
+        } />
+        <Route path="/student/profile" element={
+          <ProtectedRoute>
+            <RoleRoute requiredRole="student">
+              <UserDetailsPage />
+            </RoleRoute>
+          </ProtectedRoute>
         } />
         <Route path="/learn" element={
-          <ProtectedRoute><RoleRoute requiredRole="student"><Learn /></RoleRoute></ProtectedRoute>
+          <ProtectedRoute>
+            <RoleRoute requiredRole="student">
+              <Learn />
+            </RoleRoute>
+          </ProtectedRoute>
         } />
-        <Route path="/lesson/:subject/:chapterNumber" element={
-          <ProtectedRoute><RoleRoute requiredRole="student"><LessonPage /></RoleRoute></ProtectedRoute>
+        <Route path="/learn/class7" element={
+          <ProtectedRoute>
+            <RoleRoute requiredRole="student">
+              <Learn />
+            </RoleRoute>
+          </ProtectedRoute>
+        } />
+        <Route path="/learn/class8" element={
+          <ProtectedRoute>
+            <RoleRoute requiredRole="student">
+              <Learn />
+            </RoleRoute>
+          </ProtectedRoute>
+        } />
+        <Route path="/learn/class9" element={
+          <ProtectedRoute>
+            <RoleRoute requiredRole="student">
+              <Learn />
+            </RoleRoute>
+          </ProtectedRoute>
+        } />
+        <Route path="/learn/class10" element={
+          <ProtectedRoute>
+            <RoleRoute requiredRole="student">
+              <Learn />
+            </RoleRoute>
+          </ProtectedRoute>
+        } />
+        <Route path="/lesson/:class/:subject/:chapterNumber" element={
+          <ProtectedRoute>
+            <RoleRoute requiredRole="student">
+              <LessonPage />
+            </RoleRoute>
+          </ProtectedRoute>
         } />
         <Route path="/practice" element={
-          <ProtectedRoute><RoleRoute requiredRole="student"><Practice /></RoleRoute></ProtectedRoute>
+          <ProtectedRoute>
+            <RoleRoute requiredRole="student">
+              <Practice />
+            </RoleRoute>
+          </ProtectedRoute>
         } />
         <Route path="/career" element={
-          <ProtectedRoute><RoleRoute requiredRole="student"><Career /></RoleRoute></ProtectedRoute>
+          <ProtectedRoute>
+            <RoleRoute requiredRole="student">
+              <Career />
+            </RoleRoute>
+          </ProtectedRoute>
         } />
         <Route path="/mentorship" element={
-          <ProtectedRoute><RoleRoute requiredRole="student"><Mentorship /></RoleRoute></ProtectedRoute>
+          <ProtectedRoute>
+            <RoleRoute requiredRole="student">
+              <Mentorship />
+            </RoleRoute>
+          </ProtectedRoute>
         } />
-        {/* Route for Event Registration Page */}
         <Route path="/events/:eventId/register" element={
-          <ProtectedRoute><RoleRoute requiredRole="student"><EventRegistrationPage /></RoleRoute></ProtectedRoute>
+          <ProtectedRoute>
+            <RoleRoute requiredRole="student">
+              <EventRegistrationPage />
+            </RoleRoute>
+          </ProtectedRoute>
         } />
-
-        {/* ✅ New Learn subpages */}
         <Route path="/learn/quizzes" element={
-          <ProtectedRoute><RoleRoute requiredRole="student"><Quizzes /></RoleRoute></ProtectedRoute>
+          <ProtectedRoute>
+            <RoleRoute requiredRole="student">
+              <Quizzes />
+            </RoleRoute>
+          </ProtectedRoute>
         } />
-        {/* <Route path="/learn/pdfs" element={
-          <ProtectedRoute><RoleRoute requiredRole="student"><PDFs /></RoleRoute></ProtectedRoute>
-        } /> */}
         <Route path="/learn/recordings" element={
-          <ProtectedRoute><RoleRoute requiredRole="student"><Recordings /></RoleRoute></ProtectedRoute>
+          <ProtectedRoute>
+            <RoleRoute requiredRole="student">
+              <Recordings />
+            </RoleRoute>
+          </ProtectedRoute>
         } />
 
-        {/* Parent Routes */}
+        {/* Parent Dashboard Nested Routes */}
         <Route path="/parent/dashboard" element={
-          <ProtectedRoute><RoleRoute requiredRole="parent"><ParentDashboard /></RoleRoute></ProtectedRoute>
-        } />
-        <Route path="/parent/attendance" element={
-          <ProtectedRoute><RoleRoute requiredRole="parent"><Attendance /></RoleRoute></ProtectedRoute>
-        } />
-        <Route path="/parent/child-profile" element={
-          <ProtectedRoute><RoleRoute requiredRole="parent"><ChildProfile /></RoleRoute></ProtectedRoute>
-        } />
-        <Route path="/parent/fees" element={
-          <ProtectedRoute><RoleRoute requiredRole="parent"><Fees /></RoleRoute></ProtectedRoute>
-        } />
-        <Route path="/parent/homework" element={
-          <ProtectedRoute><RoleRoute requiredRole="parent"><HomeWork /></RoleRoute></ProtectedRoute>
-        } />
-        <Route path="/parent/reports" element={
-          <ProtectedRoute><RoleRoute requiredRole="parent"><MockTestReports /></RoleRoute></ProtectedRoute>
-        } />
-        <Route path="/parent/progress" element={
-          <ProtectedRoute><RoleRoute requiredRole="parent"><Progress /></RoleRoute></ProtectedRoute>
-        } />
-        <Route path="/parent/study-planner" element={
-          <ProtectedRoute><RoleRoute requiredRole="parent"><StudyPlanner /></RoleRoute></ProtectedRoute>
-        } />
+          <ProtectedRoute>
+            <RoleRoute requiredRole="parent">
+              <ParentDashboard />
+            </RoleRoute>
+          </ProtectedRoute>
+        }>
+          <Route index element={<DashboardHome parentName="Parent" />} />
+          <Route path="profile" element={<ChildProfile />} />
+          <Route path="attendance" element={<Attendance />} />
+          <Route path="grades" element={<Progress />} />
+          <Route path="homework" element={<Homework />} />
+          <Route path="mockreports" element={<MockTestReports />} />
+          <Route path="studyplanner" element={<StudyPlanner />} />
+          <Route path="studyplanner/:subject" element={<StudyPlanner />} />
+          <Route path="contactus" element={<ContactUs />} />
+        </Route>
 
-        {/* Catch All */}
+        {/* Catch-All Route */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
       {!hideNavbarFooter && !isStudentPage && !isParentPage && <Footer />}
-
       {isStudentPage && (
         <div className="student-chatbox-container">
           <Chatbox />
@@ -421,3 +511,7 @@ function App() {
 }
 
 export default App;
+
+
+
+

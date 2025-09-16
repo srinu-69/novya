@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams} from 'react-router-dom';
 import { 
   GraduationCap,
   Clock,
@@ -22,16 +23,29 @@ const StudyPlanner = () => {
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [currentVideo, setCurrentVideo] = useState('');
   const [selectedPlan, setSelectedPlan] = useState(null);
-  const [selectedSubject, setSelectedSubject] = useState(null);
+
+  const navigate = useNavigate();
+  const { subject } = useParams(); // Get subject from URL params
+  const [selectedSubject, setSelectedSubject] = useState(subject || '');
+  const [planner, setPlanner] = useState([]);
 
   // Define subjects (same as in ClassSevenInterface)
   const subjects = [
     { name: 'Maths', icon: Calculator, color: '#f4a468', description: 'Explore mathematical concepts, algebra, geometry and problem-solving skills.' },
-    { name: 'Science', icon: Atom, color: '#f4a468', description: 'Discover the wonders of physics, chemistry, and biology through experiments.' },
-    { name: 'English', icon: FileText, color: '#f4a468', description: 'Develop language skills through literature, grammar, and creative writing.' },
-    { name: 'Social', icon: Users, color: '#f4a468', description: 'Understand society, history, geography, and civic responsibilities.' },
-    { name: 'Computer', icon: Code, color: '#f4a468', description: 'Learn computer basics, software applications, and digital literacy.' },
+    { name: 'Science', icon: Atom, color: '#4ECDC4', description: 'Discover the wonders of physics, chemistry, and biology through experiments.' },
+    { name: 'English', icon: FileText, color: '#FF6B6B', description: 'Develop language skills through literature, grammar, and creative writing.' },
+    { name: 'Social', icon: Users, color: '#6A0572', description: 'Understand society, history, geography, and civic responsibilities.' },
+    { name: 'Computer', icon: Code, color: '#45B7D1', description: 'Learn computer basics, software applications, and digital literacy.' },
   ];
+
+  useEffect(() => {
+    if (subject) {
+      setSelectedSubject(subject);
+      // Generate study planner when subject changes
+      const generatedPlanner = generateStudyPlanner(subject);
+      setPlanner(generatedPlanner);
+    }
+  }, [subject]);
 
   // Define videos (same as in LessonPage)
   const videos = {
@@ -81,6 +95,7 @@ const StudyPlanner = () => {
     if (subjectVideos) {
       Object.keys(subjectVideos).forEach(chapterNumber => {
         const chapter = subjectVideos[chapterNumber];
+        const subjectObj = subjects.find(s => s.name === subjectName);
         planner.push({
           id: id++,
           date: `2025-07-${chapterNumber}`,
@@ -92,7 +107,7 @@ const StudyPlanner = () => {
           duration: '45 mins',
           difficulty: 'Medium',
           priority: 'High',
-          color: subjects.find(s => s.name === subjectName)?.color || '#6A0572',
+          color: subjectObj ? subjectObj.color : '#6A0572',
         });
       });
     }
@@ -100,17 +115,15 @@ const StudyPlanner = () => {
     return planner;
   };
 
-  const [planner, setPlanner] = useState([]);
-
-  const handleSubjectClick = (subject) => {
-    setSelectedSubject(subject);
-    const subjectPlanner = generateStudyPlanner(subject.name);
-    setPlanner(subjectPlanner);
+  const handleSubjectClick = (subjectObj) => {
+    // Navigate to the subject-specific study planner
+    navigate(`/parent/dashboard/studyplanner/${subjectObj.name}`);
   };
 
   const handleBackToSubjects = () => {
-    setSelectedSubject(null);
+    setSelectedSubject('');
     setPlanner([]);
+    navigate('/parent/dashboard/studyplanner');
   };
 
   const handleVideoClick = (videoUrl, plan) => {
@@ -148,6 +161,9 @@ const StudyPlanner = () => {
     const hours = parseInt(item.duration.split(' ')[0]);
     return total + hours;
   }, 0);
+
+  // Get the subject object for the currently selected subject
+  const currentSubjectObj = subjects.find(s => s.name === selectedSubject);
 
   return (
     <>
@@ -320,16 +336,16 @@ const StudyPlanner = () => {
                     background: 'rgba(255,255,255,0.96)',
                     borderRadius: '20px',
                     boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
-                    border: `2px solid ${selectedSubject.color}`
+                    border: currentSubjectObj ? `2px solid ${currentSubjectObj.color}` : '2px solid #6A0572'
                   }}
                 >
                   <div className="card-body p-4">
                     <div className="d-flex align-items-center mb-4">
-                      <div className="p-2 rounded-circle me-3" style={{ backgroundColor: selectedSubject.color + '40' }}>
-                        {React.createElement(selectedSubject.icon, { size: 24, style: { color: selectedSubject.color } })}
+                      <div className="p-2 rounded-circle me-3" style={{ backgroundColor: (currentSubjectObj?.color || '#6A0572') + '40' }}>
+                        {currentSubjectObj && React.createElement(currentSubjectObj.icon, { size: 24, style: { color: currentSubjectObj.color } })}
                       </div>
                       <div>
-                        <h5 className="fw-bold mb-1">{selectedSubject.name} Study Plan</h5>
+                        <h5 className="fw-bold mb-1">{selectedSubject} Study Plan</h5>
                         <p className="text-muted small mb-0">All chapters and video lessons</p>
                       </div>
                     </div>
@@ -339,7 +355,7 @@ const StudyPlanner = () => {
                       <div className="col-12 col-md-4">
                         <div className="p-3 rounded-4" style={{ backgroundColor: '#f8f9fa' }}>
                           <div className="d-flex align-items-center">
-                            <Target size={20} style={{ color: selectedSubject.color }} className="me-2" />
+                            <Target size={20} style={{ color: currentSubjectObj?.color || '#6A0572' }} className="me-2" />
                             <span className="fw-medium">Progress</span>
                           </div>
                           <h4 className="fw-bold mt-2 mb-0">{completedCount}/{planner.length}</h4>
@@ -349,7 +365,7 @@ const StudyPlanner = () => {
                       <div className="col-12 col-md-4">
                         <div className="p-3 rounded-4" style={{ backgroundColor: '#f8f9fa' }}>
                           <div className="d-flex align-items-center">
-                            <Clock size={20} style={{ color: selectedSubject.color }} className="me-2" />
+                            <Clock size={20} style={{ color: currentSubjectObj?.color || '#6A0572' }} className="me-2" />
                             <span className="fw-medium">Time</span>
                           </div>
                           <h4 className="fw-bold mt-2 mb-0">{totalHours}h</h4>
@@ -359,10 +375,10 @@ const StudyPlanner = () => {
                       <div className="col-12 col-md-4">
                         <div className="p-3 rounded-4" style={{ backgroundColor: '#f8f9fa' }}>
                           <div className="d-flex align-items-center">
-                            <TrendingUp size={20} style={{ color: selectedSubject.color }} className="me-2" />
+                            <TrendingUp size={20} style={{ color: currentSubjectObj?.color || '#6A0572' }} className="me-2" />
                             <span className="fw-medium">Progress</span>
                           </div>
-                          <h4 className="fw-bold mt-2 mb-0">{Math.round((completedCount/planner.length)*100)}%</h4>
+                          <h4 className="fw-bold mt-2 mb-0">{planner.length > 0 ? Math.round((completedCount/planner.length)*100) : 0}%</h4>
                           <small className="text-muted">Completion Rate</small>
                         </div>
                       </div>
@@ -539,29 +555,28 @@ const StudyPlanner = () => {
                 </button>
               </div>
               <div className="modal-body p-0">
-  {currentVideo && (
-    <div style={{ position: "relative", paddingBottom: "56.25%", height: 0 }}>
-      <video
-        src={currentVideo}
-        controls
-        controlsList="nodownload"
-        disablePictureInPicture
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          border: "none",
-          borderRadius: "0 0 20px 20px"
-        }}
-      >
-        Your browser does not support the video tag.
-      </video>
-    </div>
-  )}
-</div>
-
+                {currentVideo && (
+                  <div style={{ position: "relative", paddingBottom: "56.25%", height: 0 }}>
+                    <video
+                      src={currentVideo}
+                      controls
+                      controlsList="nodownload"
+                      disablePictureInPicture
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        border: "none",
+                        borderRadius: "0 0 20px 20px"
+                      }}
+                    >
+                      Your browser does not support the video tag.
+                    </video>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

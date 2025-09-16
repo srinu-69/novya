@@ -200,77 +200,114 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaCamera, FaEdit, FaSave } from "react-icons/fa";
 import "./UserDetailsPage.css";
+import { apiRequest, getApiUrl } from "../../config/api";
+import { USER_ROLES } from "../../config/schema";
 
 const UserDetailsPage = () => {
   const navigate = useNavigate();
   const [userData, setUserData] = useState(null);
   const [tempAvatar, setTempAvatar] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Check authentication on component mount
+  useEffect(() => {
+    const token = localStorage.getItem('access_token') || localStorage.getItem('userToken');
+    const userRole = localStorage.getItem('userRole');
+
+    if (!token || userRole !== 'student') {
+      console.log('No valid authentication found, redirecting to login');
+      navigate('/login');
+      return;
+    }
+  }, [navigate]);
 
   useEffect(() => {
     // Load user data from API
     const loadUserData = async () => {
       try {
-        const token = localStorage.getItem("userToken");
-        if (!token) {
-          console.error('No authentication token found');
-          return;
+        setLoading(true);
+
+        // First try to get user data from localStorage (set during login)
+        const storedUserData = localStorage.getItem("userData");
+        if (storedUserData) {
+          setUserData(JSON.parse(storedUserData));
         }
 
-        const response = await fetch('http://localhost:8000/api/auth/profile/data/', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        });
+        // Then fetch fresh data from API
+        const data = await apiRequest('/api/auth/profile/');
 
-        if (response.ok) {
-          const data = await response.json();
-          // Combine user, student registration, and student profile data
-          const combinedData = {
-            firstName: data.user.firstname || '',
-            lastName: data.user.lastname || '',
-            email: data.user.email || '',
-            phone: data.user.phonenumber || '',
-            userName: data.student_registration.student_username || '',
-            grade: data.student_profile.grade || '',
-            school: data.student_profile.school || '',
-            address: data.student_profile.address || '',
-            parentEmail: data.student_registration.parent_email || '',
-            parentName: '', // This might need to be fetched separately
-            parentPhone: '', // This might need to be fetched separately
-            role: 'student'
-          };
+        // Transform API data to match component structure
+        const combinedData = {
+          firstName: data.firstname || '',
+          lastName: data.lastname || '',
+          email: data.email || '',
+          phone: data.phonenumber || data.phone || '',
+          userName: data.username || '',
+          grade: data.grade || '',
+          school: data.school || '',
+          address: data.address || '',
+          parentEmail: data.parent_email || '',
+          parentName: data.parent_name || '',
+          parentPhone: data.parent_phone || '',
+          role: data.role || 'student',
+          userid: data.userid || data.id || ''
+        };
 
-          setUserData(combinedData);
-          // Also save to localStorage for offline access
-          localStorage.setItem("userData", JSON.stringify(combinedData));
-        } else {
-          console.error('Failed to load user data');
-          // Fallback to localStorage if API fails
-          const userDataFromStorage = localStorage.getItem("userData");
-          if (userDataFromStorage) {
-            setUserData(JSON.parse(userDataFromStorage));
-          }
-        }
+        setUserData(combinedData);
+        // Update localStorage with fresh data
+        localStorage.setItem("userData", JSON.stringify(combinedData));
+
       } catch (error) {
         console.error('Error loading user data:', error);
-        // Fallback to localStorage if API fails
-        const userDataFromStorage = localStorage.getItem("userData");
-        if (userDataFromStorage) {
-          setUserData(JSON.parse(userDataFromStorage));
+        // If API fails, use stored data or show default
+        const storedUserData = localStorage.getItem("userData");
+        if (storedUserData) {
+          setUserData(JSON.parse(storedUserData));
+        } else {
+          const defaultData = {
+            firstName: 'bhaskar',
+            lastName: 'pirre',
+            email: 'bhaskarpirre@gmail.com',
+            phone: '9959855622',
+            userName: 'bhaskar23',
+            grade: 'Grade',
+            school: 'School',
+            address: 'Address',
+            parentEmail: 'mmm@gmail.com',
+            parentName: 'Parent Name',
+            parentPhone: 'Parent Phone',
+            role: 'student'
+          };
+          setUserData(defaultData);
         }
+      } finally {
+        setLoading(false);
       }
     };
 
     loadUserData();
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("userToken");
-    localStorage.removeItem("userRole");
-    localStorage.removeItem("userData");
-    navigate("/");
+  const handleLogout = async () => {
+    try {
+      // Call logout API to invalidate token
+      await apiRequest('/api/auth/logout/', {
+        method: 'POST',
+        body: JSON.stringify({
+          refresh: localStorage.getItem('refresh_token')
+        })
+      });
+    } catch (error) {
+      console.error('Logout API error:', error);
+    } finally {
+      // Clear all stored data
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
+      localStorage.removeItem("userToken");
+      localStorage.removeItem("userRole");
+      localStorage.removeItem("userData");
+      navigate("/");
+    }
   };
 
   const handleInputChange = (e) => {
@@ -280,51 +317,39 @@ const UserDetailsPage = () => {
 
   const handleSave = async () => {
     try {
-      const token = localStorage.getItem("userToken");
-
       // Prepare data for API call
       const profileData = {
-        firstName: userData.firstName,
-        lastName: userData.lastName,
+        firstname: userData.firstName,
+        lastname: userData.lastName,
         email: userData.email,
-        phone: userData.phone,
-        userName: userData.userName,
+        phonenumber: userData.phone,
+        username: userData.userName,
         grade: userData.grade,
         school: userData.school,
         address: userData.address,
-        parentName: userData.parentName,
-        parentEmail: userData.parentEmail,
-        parentPhone: userData.parentPhone
+        parent_name: userData.parentName,
+        parent_email: userData.parentEmail,
+        parent_phone: userData.parentPhone
       };
 
-      const response = await fetch('http://localhost:8000/api/auth/profile/update/', {
+      const response = await apiRequest('/api/auth/profile/update/', {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
         body: JSON.stringify(profileData)
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        console.log('Profile updated successfully:', result);
+      console.log('Profile updated successfully:', response);
 
-        // Update localStorage with new data
-        localStorage.setItem("userData", JSON.stringify(userData));
+      // Update localStorage with new data
+      localStorage.setItem("userData", JSON.stringify(userData));
 
-        if (tempAvatar) {
-          setUserData((prev) => ({ ...prev, avatar: tempAvatar }));
-          localStorage.setItem("userData", JSON.stringify({ ...userData, avatar: tempAvatar }));
-        }
-
-        // Show success message
-        alert('Profile updated successfully!');
-      } else {
-        const errorData = await response.json();
-        console.error('Error updating profile:', errorData);
-        alert('Failed to update profile. Please try again.');
+      if (tempAvatar) {
+        setUserData((prev) => ({ ...prev, avatar: tempAvatar }));
+        localStorage.setItem("userData", JSON.stringify({ ...userData, avatar: tempAvatar }));
       }
+
+      // Show success message
+      alert('Profile updated successfully!');
+
     } catch (error) {
       console.error('Error updating profile:', error);
       alert('Failed to update profile. Please check your connection and try again.');
@@ -342,7 +367,7 @@ const UserDetailsPage = () => {
     }
   };
 
-  if (!userData) {
+  if (loading || !userData) {
     return (
       <div className="user-details-container">
         <div className="loading">Loading user data...</div>
@@ -361,7 +386,7 @@ const UserDetailsPage = () => {
         <div className="user-details-header">
           <h1>User Details</h1>
           <div className="header-buttons">
-            <button className="back-button" onClick={() => navigate(-1)}>
+            <button className="back-button" onClick={() => navigate('/student/dashboard')}>
               &larr; Back
             </button>
             <button className="logout-button-page" onClick={handleLogout}>

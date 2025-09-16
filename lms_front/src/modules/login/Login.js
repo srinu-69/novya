@@ -3,11 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { Toast, ToastContainer, Modal, Button, Form } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { motion } from 'framer-motion';
-import { FaUserGraduate, FaUserTie, FaBookOpen, FaChalkboardTeacher, FaEye, FaEyeSlash, FaChild } from 'react-icons/fa';
+import { FaUserGraduate, FaUserTie, FaBookOpen, FaChalkboardTeacher, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { RiLockPasswordFill } from 'react-icons/ri';
 import { IoMdSchool } from 'react-icons/io';
- 
-// ✅ Full Updated LoginPage with Forgot Password and Child Email for Parents
+import { apiRequest, getApiUrl } from '../../config/api';
+
+// ✅ Full Updated LoginPage with Forgot Password
 const LoginPage = () => {
   const [activeTab, setActiveTab] = useState('student');
   const [formData, setFormData] = useState({
@@ -29,9 +30,10 @@ const LoginPage = () => {
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotError, setForgotError] = useState('');
- 
+
   const navigate = useNavigate();
- 
+
+
   // ✅ Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -42,6 +44,7 @@ const LoginPage = () => {
         [name]: value,
       },
     }));
+
     if (errors[activeTab][name]) {
       setErrors((prev) => ({
         ...prev,
@@ -52,13 +55,17 @@ const LoginPage = () => {
       }));
     }
   };
- 
+
   // ✅ Validate login form
   const validateForm = () => {
     let valid = true;
     const current = formData[activeTab];
-    const newErrors = { username: '', password: '', childEmail: '' };
- 
+    const newErrors = {
+      username: '',
+      password: '',
+      ...(activeTab === 'parent' && { childEmail: '' })
+    };
+
     if (!current.username.trim()) {
       newErrors.username = 'Username is required';
       valid = false;
@@ -66,7 +73,7 @@ const LoginPage = () => {
       newErrors.username = 'Username must be at least 4 characters';
       valid = false;
     }
- 
+
     if (!current.password) {
       newErrors.password = 'Password is required';
       valid = false;
@@ -74,24 +81,26 @@ const LoginPage = () => {
       newErrors.password = 'Password must be at least 6 characters';
       valid = false;
     }
- 
-    // Additional validation for parent: child email
-    if (activeTab === 'parent' && !current.childEmail.trim()) {
-      newErrors.childEmail = 'Child email is required';
-      valid = false;
-    } else if (activeTab === 'parent' && current.childEmail && !/\S+@\S+\.\S+/.test(current.childEmail)) {
-      newErrors.childEmail = 'Please enter a valid email address';
-      valid = false;
+
+    // Additional validation for parent login
+    if (activeTab === 'parent') {
+      if (!current.childEmail) {
+        newErrors.childEmail = 'Child email is required';
+        valid = false;
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(current.childEmail)) {
+        newErrors.childEmail = 'Please enter a valid email address';
+        valid = false;
+      }
     }
- 
+
     setErrors((prev) => ({
       ...prev,
       [activeTab]: newErrors,
     }));
- 
+
     return valid;
   };
- 
+
   // ✅ Toggle Password Visibility (separate for Student & Parent)
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => ({
@@ -99,7 +108,7 @@ const LoginPage = () => {
       [activeTab]: !prev[activeTab],
     }));
   };
- 
+
   // ✅ Handle login submit
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -108,47 +117,57 @@ const LoginPage = () => {
       setIsLoading(true);
 
       try {
-        const response = await fetch('http://localhost:8000/api/auth/login/', {
+        const loginData = {
+          username: current.username,
+          password: current.password,
+        };
+
+        // Add child email for parent login
+        if (activeTab === 'parent' && current.childEmail) {
+          loginData.child_email = current.childEmail;
+        }
+
+        const response = await fetch(getApiUrl('/api/auth/login/'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            username: current.username,
-            password: current.password,
-          }),
+          body: JSON.stringify(loginData),
         });
 
+        const data = await response.json();
+
         if (response.ok) {
-          const data = await response.json();
-          
-          // Store authentication data
-          localStorage.setItem('userRole', data.user.role.toLowerCase());
+          // Store tokens and user data
+          localStorage.setItem('access_token', data.access);
+          localStorage.setItem('refresh_token', data.refresh);
           localStorage.setItem('userToken', data.access);
-          localStorage.setItem('refreshToken', data.refresh);
+          localStorage.setItem('userRole', data.user.role.toLowerCase());
           localStorage.setItem('userData', JSON.stringify(data.user));
-          
+
           // Store child email for parent login
           if (activeTab === 'parent' && current.childEmail) {
             localStorage.setItem('childEmail', current.childEmail);
           }
-          
-          setToastMsg(`${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} login successful!`);
+
+          setToastMsg(`${data.user.role} login successful!`);
           setShowToast(true);
           setIsLoading(false);
 
           setTimeout(() => {
-            navigate(activeTab === 'student' ? '/student/dashboard' : '/parent/dashboard');
+            const role = data.user.role.toLowerCase();
+            if (role === 'student') {
+              navigate('/student/dashboard');
+            } else if (role === 'parent') {
+              navigate('/parent/dashboard');
+            } else {
+              navigate('/');
+            }
           }, 2000);
         } else {
-          const errorData = await response.json();
           setErrors((prev) => ({
             ...prev,
-            [activeTab]: {
-              ...prev[activeTab],
-              username: '',
-              password: errorData.detail || 'Invalid username or password'
-            },
+            [activeTab]: { username: '', password: data.detail || 'Invalid username or password' },
           }));
           setIsLoading(false);
         }
@@ -156,31 +175,29 @@ const LoginPage = () => {
         console.error('Login error:', error);
         setErrors((prev) => ({
           ...prev,
-          [activeTab]: {
-            ...prev[activeTab],
-            username: '',
-            password: 'Network error. Please try again.'
-          },
+          [activeTab]: { username: '', password: 'Network error. Please try again.' },
         }));
         setIsLoading(false);
       }
     }
   };
- 
+
   // Handle register navigation
   const handleRegisterClick = () => {
     navigate('/signup');
   };
- 
+
   // ✅ Forgot Password - Submit
   const handleForgotPassword = async () => {
     if (!forgotEmail.trim() || !/\S+@\S+\.\S+/.test(forgotEmail)) {
       setForgotError('Please enter a valid email address');
       return;
     }
-    
+
+    setForgotError('');
+
     try {
-      const response = await fetch('http://localhost:8000/api/auth/request-password-reset/', {
+      const response = await fetch(getApiUrl('/api/auth/request-password-reset/'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -190,34 +207,33 @@ const LoginPage = () => {
         }),
       });
 
+      const data = await response.json();
+
       if (response.ok) {
-        const data = await response.json();
-        setForgotError('');
         setShowForgotModal(false);
-        setToastMsg(`Password reset link sent to ${forgotEmail}. Check your email or use the token: ${data.token}`);
+        setToastMsg(`Password reset link sent to ${forgotEmail}`);
         setShowToast(true);
         setForgotEmail('');
       } else {
-        const errorData = await response.json();
-        setForgotError(errorData.error || 'Failed to send reset link');
+        setForgotError(data.detail || 'Failed to send reset link. Please try again.');
       }
     } catch (error) {
       console.error('Forgot password error:', error);
       setForgotError('Network error. Please try again.');
     }
   };
- 
+
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
   };
- 
+
   const itemVariants = {
     hidden: { y: 20, opacity: 0 },
     visible: { y: 0, opacity: 1, transition: { type: 'spring', stiffness: 100 } }
   };
- 
+
   return (
     <div className="min-vh-100 d-flex align-items-center" style={{
       background: 'linear-gradient(to right, #2D5D7B, #A62D69)',
@@ -237,7 +253,7 @@ const LoginPage = () => {
         style={{ position: 'absolute', bottom: '10%', left: '10%', fontSize: '3.5rem', color: 'rgba(255,255,255,0.2)' }}>
         <FaChalkboardTeacher />
       </motion.div>
- 
+
       {/* Toast */}
       <ToastContainer position="top-end" className="p-3">
         <Toast onClose={() => setShowToast(false)} show={showToast} delay={2500} autohide bg="success">
@@ -247,7 +263,7 @@ const LoginPage = () => {
           <Toast.Body className="text-white">{toastMsg}</Toast.Body>
         </Toast>
       </ToastContainer>
- 
+
       {/* Forgot Password Modal */}
       <Modal show={showForgotModal} onHide={() => setShowForgotModal(false)} centered>
         <Modal.Header closeButton>
@@ -270,7 +286,7 @@ const LoginPage = () => {
           <Button variant="primary" onClick={handleForgotPassword}>Send Reset Link</Button>
         </Modal.Footer>
       </Modal>
- 
+
       {/* Main Card */}
       <motion.div initial="hidden" animate="visible" variants={containerVariants} className="container">
         <div className="row justify-content-center">
@@ -291,10 +307,10 @@ const LoginPage = () => {
                       <h4 className="fw-bold mb-0">{activeTab === 'student' ? 'Student Portal' : 'Parent Portal'}</h4>
                       {activeTab === 'student'
                         ? <p className="mb-0 text-white">Your gateway to knowledge</p>
-                        : <p className="mb-0 text-white">Track your child's progress</p>}
+                        : <p className="mb-0 text-white">Track your child’s progress</p>}
                     </motion.div>
                   </div>
- 
+
                   {/* Right Form */}
                   <div className="col-md-7">
                     <div className="p-4 p-md-5">
@@ -302,13 +318,15 @@ const LoginPage = () => {
                       <motion.div variants={itemVariants} className="text-center mb-4"
                         onHoverStart={() => setIsHovered(true)} onHoverEnd={() => setIsHovered(false)}>
                         <motion.h1 className="fw-bold mb-2"
-                          style={{ background: 'linear-gradient(to right, #2D5D7B, #A62D69)',
-                            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                          style={{
+                            background: 'linear-gradient(to right, #2D5D7B, #A62D69)',
+                            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'
+                          }}>
                           NOVYA
                         </motion.h1>
                         <p className="text-muted">Education Management Platform</p>
                       </motion.div>
- 
+
                       {/* Tabs */}
                       <div className="btn-group w-100 shadow-sm mb-4">
                         <button className={`btn ${activeTab === 'student' ? 'btn-primary' : 'btn-outline-primary'}`}
@@ -320,7 +338,7 @@ const LoginPage = () => {
                           <FaUserTie className="me-2" /> Parent
                         </button>
                       </div>
- 
+
                       {/* Form */}
                       <motion.form variants={containerVariants} onSubmit={handleSubmit}>
                         {/* Username */}
@@ -341,9 +359,9 @@ const LoginPage = () => {
                             <div className="invalid-feedback d-block">{errors[activeTab].username}</div>
                           )}
                         </div>
- 
+
                         {/* Password */}
-                        <div className="mb-3">
+                        <div className="mb-2">
                           <label className="form-label fw-medium">Password</label>
                           <div className="input-group">
                             <span className="input-group-text"><RiLockPasswordFill /></span>
@@ -365,42 +383,43 @@ const LoginPage = () => {
                             <div className="invalid-feedback d-block">{errors[activeTab].password}</div>
                           )}
                         </div>
- 
-                        {/* Child Email Field (Only for Parent) */}
+
+                        {/* Child Email - Only for Parent Login */}
                         {activeTab === 'parent' && (
                           <div className="mb-3">
                             <label className="form-label fw-medium">Child's Email</label>
                             <div className="input-group">
-                              <span className="input-group-text"><FaChild /></span>
+                              <span className="input-group-text">
+                                <FaUserGraduate />
+                              </span>
                               <input
                                 type="email"
                                 name="childEmail"
                                 className="form-control"
                                 value={formData.parent.childEmail}
                                 onChange={handleChange}
-                                placeholder="Enter child's email"
+                                placeholder="Enter your child's email"
                               />
                             </div>
                             {errors.parent.childEmail && (
                               <div className="invalid-feedback d-block">{errors.parent.childEmail}</div>
                             )}
-                           
                           </div>
                         )}
- 
+
                         {/* Forgot Password */}
                         <div className="text-end mb-3">
                           <button type="button" className="btn btn-link p-0" onClick={() => setShowForgotModal(true)}>
                             Forgot Password?
                           </button>
                         </div>
- 
+
                         {/* Submit */}
                         <button type="submit" className="btn w-100" disabled={isLoading}
                           style={{ background: "linear-gradient(to right, #2D5D7B, #A62D69)", color: "white" }}>
                           {isLoading ? "Signing in..." : "Sign In"}
                         </button>
- 
+
                         {/* Register */}
                         <div className="text-center mt-3">
                           <p className="text-muted">
@@ -420,5 +439,5 @@ const LoginPage = () => {
     </div>
   );
 };
- 
+
 export default LoginPage;

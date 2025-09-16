@@ -1,26 +1,46 @@
+
 import React, { useState, useEffect } from 'react';
-
 import { Link } from 'react-router-dom';
-
 import { motion, useAnimation } from 'framer-motion';
-
 import { useInView } from 'react-intersection-observer';
-
 import { useNavigate } from 'react-router-dom';
-
 import './Home1.css';
+import { apiRequest, getApiUrl } from '../../config/api';
+import { USER_ROLES } from '../../config/schema';
 
- 
+
 
 const Home1 = () => {
+  const navigate = useNavigate();
+  const [userData, setUserData] = useState(null);
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-
     document.title = "Student-Dashboard | NOVYA - Your Smart Learning Platform";
-
+    fetchDashboardData();
   }, []);
 
-  const navigate = useNavigate();
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+
+      // Fetch user profile
+      const userResponse = await apiRequest('/api/auth/profile/');
+      setUserData(userResponse);
+
+      // Fetch dashboard data
+      const dashboardResponse = await apiRequest('/api/progress/dashboard/');
+      setDashboardData(dashboardResponse);
+
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      setError('Failed to load dashboard data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const [currentCourse, setCurrentCourse] = useState('Mathematics Class 7');
 
@@ -36,7 +56,7 @@ const Home1 = () => {
 
   ]);
 
- 
+
 
   const coursesByClass = {
 
@@ -106,7 +126,7 @@ const Home1 = () => {
 
   };
 
- 
+
 
   const statsByClass = {
 
@@ -160,7 +180,7 @@ const Home1 = () => {
 
   };
 
- 
+
 
   const topicsByClass = {
 
@@ -174,7 +194,7 @@ const Home1 = () => {
 
   };
 
- 
+
 
   const [activeClass, setActiveClass] = useState('7');
 
@@ -196,7 +216,7 @@ const Home1 = () => {
 
   const [ref, inView] = useInView();
 
- 
+
 
   const subjectMap = {
 
@@ -212,7 +232,7 @@ const Home1 = () => {
 
   };
 
- 
+
 
   useEffect(() => {
 
@@ -222,7 +242,7 @@ const Home1 = () => {
 
   }, [activeClass]);
 
- 
+
 
   useEffect(() => {
 
@@ -242,7 +262,7 @@ const Home1 = () => {
 
   }, [activeTab, allCourses]);
 
- 
+
 
   useEffect(() => {
 
@@ -254,7 +274,7 @@ const Home1 = () => {
 
   }, [controls, inView]);
 
- 
+
 
   const containerVariants = {
 
@@ -270,7 +290,7 @@ const Home1 = () => {
 
   };
 
- 
+
 
   const itemVariants = {
 
@@ -288,7 +308,7 @@ const Home1 = () => {
 
   };
 
- 
+
 
   const hoverEffect = {
 
@@ -300,7 +320,7 @@ const Home1 = () => {
 
   };
 
- 
+
 
   const cardHover = {
 
@@ -312,7 +332,7 @@ const Home1 = () => {
 
   };
 
- 
+
 
   const textVariants = {
 
@@ -330,7 +350,7 @@ const Home1 = () => {
 
   };
 
- 
+
 
   const fadeIn = {
 
@@ -346,7 +366,7 @@ const Home1 = () => {
 
   };
 
- 
+
 
   const staggerContainer = {
 
@@ -366,7 +386,7 @@ const Home1 = () => {
 
   };
 
- 
+
 
   const heroVariants = {
 
@@ -384,7 +404,7 @@ const Home1 = () => {
 
   };
 
- 
+
 
   const pulseAnimation = {
 
@@ -394,7 +414,7 @@ const Home1 = () => {
 
   };
 
- 
+
 
   const floatAnimation = {
 
@@ -404,7 +424,7 @@ const Home1 = () => {
 
   };
 
- 
+
 
   const glowAnimation = {
 
@@ -422,7 +442,7 @@ const Home1 = () => {
 
   };
 
- 
+
 
   const rotateAnimation = {
 
@@ -432,7 +452,7 @@ const Home1 = () => {
 
   };
 
- 
+
 
   return (
 
@@ -520,7 +540,7 @@ const Home1 = () => {
 
       />
 
- 
+
 
       <motion.section
 
@@ -610,7 +630,8 @@ const Home1 = () => {
 
               </motion.div>
 
-             
+
+
 
               {[
 
@@ -650,7 +671,7 @@ const Home1 = () => {
 
           </motion.div>
 
-         
+
 
           <motion.div
 
@@ -690,7 +711,7 @@ const Home1 = () => {
 
       </motion.section>
 
- 
+
 
       {/* Rest of your existing code remains unchanged */}
 
@@ -734,10 +755,10 @@ const Home1 = () => {
 
             </motion.h2>
 
-            
+
           </div>
 
-         
+
 
           <div className="row g-4">
 
@@ -853,7 +874,7 @@ const Home1 = () => {
 
                 <div className="course-actions mt-4">
 
-                 
+
 
                   <motion.button
 
@@ -907,7 +928,7 @@ const Home1 = () => {
 
             </div>
 
-           
+
 
             <div className="col-lg-4">
 
@@ -993,7 +1014,7 @@ const Home1 = () => {
 
         </motion.section>
 
- 
+
 
         <motion.section
 
@@ -1006,7 +1027,7 @@ const Home1 = () => {
           <div className="section-header">
 
             <h2>Your Courses</h2>
-           
+
 
 
             <div className="tabs">
@@ -1047,36 +1068,36 @@ const Home1 = () => {
 
           <div className="tabs">
 
-              {['7', '8', '9', '10'].map((cls) => (
+            {['7', '8', '9', '10'].map((cls) => (
 
-                <motion.button
+              <motion.button
 
-                  key={cls}
+                key={cls}
 
-                  className={activeClass === cls ? 'active' : ''}
+                className={activeClass === cls ? 'active' : ''}
 
-                  onClick={() => setActiveClass(cls)}
+                onClick={() => setActiveClass(cls)}
 
-                  whileHover={{ scale: 1.05, backgroundColor: activeClass === cls ? '#1a3a4f' : '#e9ecef' }}
+                whileHover={{ scale: 1.05, backgroundColor: activeClass === cls ? '#1a3a4f' : '#e9ecef' }}
 
-                  whileTap={{ scale: 0.95 }}
+                whileTap={{ scale: 0.95 }}
 
-                  initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 10 }}
 
-                  animate={{ opacity: 1, y: 0 }}
+                animate={{ opacity: 1, y: 0 }}
 
-                  transition={{ delay: 0.3 }}
+                transition={{ delay: 0.3 }}
 
-                >
+              >
 
-                  Class {cls}
+                Class {cls}
 
-                </motion.button>
+              </motion.button>
 
-              ))}
+            ))}
 
-            </div>
-<br/>
+          </div>
+          <br />
           <div className="row g-4">
 
             {featuredCourses.map((course, index) => (
@@ -1121,21 +1142,7 @@ const Home1 = () => {
 
                       >
 
-                        <motion.button
 
-                          className="btn btn-primary"
-
-                          whileHover={{ scale: 1.05 }}
-
-                          whileTap={{ scale: 0.95 }}
-
-                          onClick={() => navigate(`/learn/class${activeClass}?subject=${subjectMap[course.category]}`)}
-
-                        >
-
-                          Continue Learning
-
-                        </motion.button>
 
                       </motion.div>
 
@@ -1183,13 +1190,13 @@ const Home1 = () => {
 
                     <motion.button
 
-                        className="btn btn-primary w-100 mt-3"
+                      className="btn btn-primary w-100 mt-3"
 
-                        whileHover={{ scale: 1.02,  boxShadow: "0 4px 15px rgba(166, 45, 105, 0.3)" }}
+                      whileHover={{ scale: 1.02, boxShadow: "0 5px 15px rgba(45, 93, 123, 0.4)" }}
 
-                        whileTap={{ scale: 0.98 }}
+                      whileTap={{ scale: 0.98 }}
 
-                        onClick={() => navigate(`/learn/class${activeClass}?subject=${subjectMap[course.category]}`)}
+                      onClick={() => navigate(`/learn/class${activeClass}?subject=${subjectMap[course.category]}`)}
 
                     >
 
@@ -1209,7 +1216,7 @@ const Home1 = () => {
 
         </motion.section>
 
- 
+
 
         <motion.section
 
@@ -1227,7 +1234,7 @@ const Home1 = () => {
 
           </div>
 
-         
+
 
           <div className="row g-4">
 
@@ -1359,6 +1366,6 @@ const Home1 = () => {
 
 };
 
- 
+
 
 export default Home1;

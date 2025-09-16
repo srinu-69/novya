@@ -301,10 +301,10 @@ const Career = () => {
                 <BarChart2 size={20} />
                 View Dashboard
               </button>
-              <button className="cta-btn secondary" onClick={navigateToHome}>
+              {/* <button className="cta-btn secondary" onClick={navigateToHome}>
                 <Compass size={20} />
                 Explore Careers
-              </button>
+              </button> */}
             </div>
           </div>
           
@@ -498,10 +498,10 @@ const Career = () => {
               <BarChart2 size={20} />
               View Full Report
             </button>
-            <button className="cta-btn secondary" onClick={scrollToFuture}>
+            {/* <button className="cta-btn secondary" onClick={scrollToFuture}>
               <Compass size={20} />
               Get Improvement Plan
-            </button>
+            </button> */}
           </div>
         </div>
       </section>

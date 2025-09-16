@@ -16,7 +16,7 @@ function FAQs() {
     },
     {
       question: 'Is this platform suitable for CBSE students?',
-      answer: 'Yes, we support CBSE and state syllabus from Grade 6 to 12 with subject-wise smart learning tools.'
+      answer: 'Yes, we support NCERT and state syllabus from Grade 7 to 10 with subject-wise smart learning tools.'
     },
     {
       question: 'Can I use Novya AI on my phone?',

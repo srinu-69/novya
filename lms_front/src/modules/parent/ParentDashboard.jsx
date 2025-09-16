@@ -1,24 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import ChildProfile from './ChildProfile';
-import Attendance from './Attendance';
-import Progress from './Progress';
-import Homework from './HomeWork';
-import MockTestReports from './MockTestReports';
-import StudyPlanner from './StudyPlanner';
-import ContactUs from './ContactUs';
-import { Typewriter } from 'react-simple-typewriter';
-import { 
-  FiLogOut,        
-  FiBell,          
+import { useNavigate, useLocation, Routes, Route, Outlet } from 'react-router-dom';
+import {
+  FiLogOut,
+  FiBell,
   FiSettings,
-        
-  FiGlobe,         
-  FiTrendingUp,
+  FiGlobe,
   FiMenu,
   FiX
 } from 'react-icons/fi';
-import { 
+import {
   HiOutlineUserCircle,
   HiOutlineCalendarDays,
   HiOutlineChartBarSquare,
@@ -29,10 +19,13 @@ import {
 } from 'react-icons/hi2';
 import novyaLogo from '../home/assets/NOVYA LOGO.png';
 import { FaPhoneAlt } from 'react-icons/fa';
+import { apiRequest, getApiUrl } from '../../config/api';
+import { USER_ROLES } from '../../config/schema';
 
 const ParentDashboard = () => {
-  
-  const [selectedSection, setSelectedSection] = useState('');
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [isLoaded, setIsLoaded] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [parentName, setParentName] = useState('');
@@ -43,26 +36,84 @@ const ParentDashboard = () => {
   const [language, setLanguage] = useState('English');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [parentData, setParentData] = useState(null);
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const mainContentRef = useRef(null);
-  const navigate = useNavigate();
-const [showProfile, setShowProfile] = useState(false);
+  const getCurrentSection = () => {
+    const pathParts = location.pathname.split('/');
+    return pathParts[pathParts.length - 1] || '';
+  };
+
+  const [selectedSection, setSelectedSection] = useState(getCurrentSection());
+
+  const fetchParentDashboardData = async () => {
+    try {
+      setLoading(true);
+
+      // Fetch parent profile
+      const userResponse = await apiRequest('/api/auth/profile/');
+      console.log('✅ Parent profile data:', userResponse);
+      setParentData(userResponse);
+      setParentName(userResponse.firstname || 'Parent');
+
+      // Try to fetch parent registration details for more complete information
+      try {
+        const parentEmail = userResponse.email;
+        if (parentEmail) {
+          const parentRegistrationResponse = await apiRequest(`/api/auth/parent/${encodeURIComponent(parentEmail)}/`);
+          if (parentRegistrationResponse) {
+            // Merge registration data with profile data
+            setParentData({
+              ...userResponse,
+              ...parentRegistrationResponse,
+              // Map registration fields to profile fields
+              phonenumber: parentRegistrationResponse.phone_number || userResponse.phonenumber,
+              address: parentRegistrationResponse.address || userResponse.address,
+            });
+            console.log('✅ Parent registration data loaded:', parentRegistrationResponse);
+          }
+        }
+      } catch (registrationError) {
+        console.log('⚠️ Could not fetch parent registration details, using profile data only:', registrationError);
+      }
+
+      // Fetch parent dashboard data
+      const dashboardResponse = await apiRequest('/api/progress/parent-dashboard/');
+      setDashboardData(dashboardResponse);
+
+      // Fetch notifications
+      const notificationsResponse = await apiRequest('/api/notifications/');
+      setNotifications(notificationsResponse.results || notificationsResponse);
+
+    } catch (error) {
+      console.error('Error fetching parent dashboard data:', error);
+      setError('Failed to load dashboard data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    // Update selectedSection when URL changes
+    setSelectedSection(getCurrentSection());
+    fetchParentDashboardData();
+  }, [location]);
+
+  const [showProfile, setShowProfile] = useState(false);
   useEffect(() => {
     const timer = setTimeout(() => setIsLoaded(true), 100);
     const username = localStorage.getItem('parentUsername') || localStorage.getItem('username') || 'Parent';
     setParentName(username);
-    
-    setNotifications([
-      { id: 1, title: 'New Assignment', message: 'Math homework assigned to your child', time: '2 hours ago', read: false },
-      { id: 2, title: 'Progress Report', message: 'Weekly progress report is available', time: '1 day ago', read: false },
-      { id: 3, title: 'Parent-Teacher Meeting', message: 'Reminder: Meeting scheduled for tomorrow', time: '2 days ago', read: false },
-      { id: 4, title: 'Attendance', message: 'Warning:Missed two classes', time: '2 days ago', read: false },
-    ]);
-    
+
+    // Notifications will be fetched from API in fetchParentDashboardData
+
     const savedTheme = localStorage.getItem('themePreference');
     if (savedTheme === 'dark') {
       setDarkMode(true);
     }
-    
+
     return () => clearTimeout(timer);
   }, []);
 
@@ -79,7 +130,7 @@ const [showProfile, setShowProfile] = useState(false);
       homework: 'Assignments',
       mockreports: 'Mock Tests',
       studyplanner: 'Study Plan',
-      faq:'Contactus'
+      faq: 'Contactus'
     };
     document.title = selectedSection && titles[selectedSection]
       ? `${titles[selectedSection]} | NOVYA - Your Smart Learning Platform`
@@ -97,61 +148,61 @@ const [showProfile, setShowProfile] = useState(false);
   }, [darkMode]);
 
   const sections = [
-    { 
-      key: '', 
-      label: 'Dashboard', 
+    {
+      key: '',
+      label: 'Dashboard',
       icon: HiOutlineHome,
       gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      
+
     },
-    { 
-      key: 'profile', 
-      label: 'Child Profile', 
+    {
+      key: 'profile',
+      label: 'Child Profile',
       icon: HiOutlineUserCircle,
       gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-   
+
     },
-    { 
-      key: 'attendance', 
-      label: 'Attendance', 
+    {
+      key: 'attendance',
+      label: 'Attendance',
       icon: HiOutlineCalendarDays,
       gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-    
+
     },
-    { 
-      key: 'grades', 
-      label: 'Progress', 
+    {
+      key: 'grades',
+      label: 'Progress',
       icon: HiOutlineChartBarSquare,
       gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-      
+
     },
-    { 
-      key: 'homework', 
-      label: 'Assignments', 
+    {
+      key: 'homework',
+      label: 'Assignments',
       icon: HiOutlineAcademicCap,
       gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-   
+
     },
-    { 
-      key: 'mockreports', 
-      label: 'Mock Tests', 
+    {
+      key: 'mockreports',
+      label: 'Mock Tests',
       icon: HiOutlineClipboardDocumentList,
       gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-     
+
     },
-    { 
-      key: 'studyplanner', 
-      label: 'Study Plan', 
+    {
+      key: 'studyplanner',
+      label: 'Study Plan',
       icon: HiOutlineLightBulb,
       gradient: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
-   
+
     },
-    { 
-      key: 'faq', 
-      label: 'Contact us', 
+    {
+      key: 'contactus',
+      label: 'Contact us',
       icon: FaPhoneAlt,
       gradient: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
-   
+
     }
   ];
 
@@ -160,14 +211,18 @@ const [showProfile, setShowProfile] = useState(false);
     localStorage.removeItem('userToken');
     localStorage.removeItem('parentUsername');
     localStorage.removeItem('username');
+    localStorage.removeItem('childEmail');
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('userData');
     navigate('/');
   };
 
   const formatTime = (date) => {
-    return date.toLocaleTimeString('en-US', { 
-      hour12: true, 
-      hour: 'numeric', 
-      minute: '2-digit' 
+    return date.toLocaleTimeString('en-US', {
+      hour12: true,
+      hour: 'numeric',
+      minute: '2-digit'
     });
   };
 
@@ -179,7 +234,7 @@ const [showProfile, setShowProfile] = useState(false);
   };
 
   const markNotificationAsRead = (id) => {
-    setNotifications(notifications.map(notification => 
+    setNotifications(notifications.map(notification =>
       notification.id === id ? { ...notification, read: true } : notification
     ));
   };
@@ -196,140 +251,27 @@ const [showProfile, setShowProfile] = useState(false);
   };
 
   const handleSectionSelect = (sectionKey) => {
-    setSelectedSection(sectionKey);
-    setMobileMenuOpen(false); // Close mobile menu when selecting a section
+    // Use navigate instead of setSelectedSection
+    navigate(`/parent/dashboard/${sectionKey}`);
+    setMobileMenuOpen(false);
   };
 
-  const renderSection = () => {
-    switch (selectedSection) {
-      case 'profile': return <ChildProfile />;
-      case 'attendance': return <Attendance />;
-      case 'grades': return <Progress />;
-      case 'homework': return <Homework />;
-      case 'mockreports': return <MockTestReports />;
-      case 'studyplanner': return <StudyPlanner />;
-      case 'faq': return <ContactUs />;
-      default:
-        return (
-          <div className="dashboard-home">
-            <div className="welcome-section">
-              <div className="welcome-content">
-                <div className="welcome-text">
-                  <h1>Welcome back, {parentName}!</h1>
-                  <div className="typewriter-container">
-                    <Typewriter
-                      words={[
-                        "Monitor academic progress in real-time",
-                        "Stay connected with teachers and assignments", 
-                        "Celebrate every milestone and achievement",
-                        "Support your child's educational journey"
-                      ]}
-                      loop
-                      typeSpeed={50}
-                      deleteSpeed={30}
-                      delaySpeed={2500}
-                    />
-                  </div>
-                </div>
-                <div className="welcome-image">
-                  <img
-                    src="https://user-gen-media-assets.s3.amazonaws.com/gpt4o_images/d92aaad8-daf4-48e8-9313-bc4d45f82b91.png"
-                    alt="Parent and child learning together"
-                    className="parent-child-image"
-                  />
-                  <div className="image-overlay"></div>
-                </div>
-              </div>
-            </div>
-
-            <div className="stats-section">
-              <h2>Quick Overview</h2>
-              <div className="stats-grid">
-                <div className="stat-card">
-                  <div className="stat-icon" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
-                    <FiTrendingUp />
-                  </div>
-                  <div className="stat-content">
-                    <div className="stat-value">85%</div>
-                    <div className="stat-label">Overall Progress</div>
-                    <div className="stat-change positive">+5% this week</div>
-                  </div>
-                </div>
-
-                <div className="stat-card">
-                  <div className="stat-icon" style={{ background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)' }}>
-                    <HiOutlineCalendarDays />
-                  </div>
-                  <div className="stat-content">
-                    <div className="stat-value">92%</div>
-                    <div className="stat-label">Attendance Rate</div>
-                    <div className="stat-change positive">+2% this month</div>
-                  </div>
-                </div>
-
-                <div className="stat-card">
-                  <div className="stat-icon" style={{ background: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)' }}>
-                    <HiOutlineClipboardDocumentList />
-                  </div>
-                  <div className="stat-content">
-                    <div className="stat-value">15</div>
-                    <div className="stat-label">Achievements</div>
-                    <div className="stat-change positive">+3 this week</div>
-                  </div>
-                </div>
-
-                <div className="stat-card">
-                  <div className="stat-icon" style={{ background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' }}>
-                    <HiOutlineAcademicCap />
-                  </div>
-                  <div className="stat-content">
-                    <div className="stat-value">8/10</div>
-                    <div className="stat-label">Assignments</div>
-                    <div className="stat-change neutral">2 pending</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="features-section">
-              <h2>What Makes NOVYA Special</h2>
-              <div className="features-grid">
-                <div className="feature-card">
-                  <div className="feature-icon">🧠</div>
-                  <h3>AI-Powered Learning</h3>
-                  <p>Personalized learning paths adapted to your child's unique learning style and pace.</p>
-                </div>
-                <div className="feature-card">
-                  <div className="feature-icon">📊</div>
-                  <h3>Real-time Analytics</h3>
-                  <p>Track progress with detailed insights and performance metrics updated in real-time.</p>
-                </div>
-                <div className="feature-card">
-                  <div className="feature-icon">🎯</div>
-                  <h3>Goal-based Learning</h3>
-                  <p>Set and achieve learning goals with milestone tracking and celebration of achievements.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-    }
-  };
 
   return (
     <div className={`parent-dashboard ${darkMode ? 'dark-mode' : ''}`}>
       {/* Mobile Menu Overlay */}
       {mobileMenuOpen && <div className="mobile-overlay" onClick={() => setMobileMenuOpen(false)}></div>}
-      
+
       {/* Sidebar */}
       <div className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''} ${mobileMenuOpen ? 'mobile-open' : ''}`}>
+
         <div className="sidebar-header">
           <div className="sidebar-logo">
             <img src={novyaLogo} alt="NOVYA" />
             {!sidebarCollapsed && <span>NOVYA</span>}
           </div>
-        
-          <button 
+
+          <button
             className="sidebar-toggle mobile-only"
             onClick={() => setMobileMenuOpen(false)}
           >
@@ -374,7 +316,7 @@ const [showProfile, setShowProfile] = useState(false);
         {/* Top Header */}
         <header className="top-header">
           <div className="header-left">
-            <button 
+            <button
               className="mobile-menu-btn"
               onClick={handleMobileMenuToggle}
             >
@@ -385,7 +327,7 @@ const [showProfile, setShowProfile] = useState(false);
               <p>{getGreeting()}! Track your child's learning journey</p>
             </div>
           </div>
-          
+
           <div className="header-right">
             <div className="time-display">
               <div className="current-time">{formatTime(currentTime)}</div>
@@ -395,7 +337,7 @@ const [showProfile, setShowProfile] = useState(false);
             <div className="header-actions">
               {/* Notifications */}
               <div className="notification-container">
-                <button 
+                <button
                   className="action-btn"
                   onClick={() => {
                     setShowNotifications(!showNotifications);
@@ -410,30 +352,30 @@ const [showProfile, setShowProfile] = useState(false);
 
                 {showNotifications && (
                   <div className="notification-dropdown">
-                <div className="dropdown-header" style={{ alignItems: "center" }}>
-  <h3 style={{ margin: 0, flex: 1 }}>Notifications</h3>
-  <div className="header-actions-right" style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-   
-    <button
-      className="clear-all-btn"
-      onClick={() => setNotifications([])}
-    >
-      Clear
-    </button>
-    <button
-      className="close-dropdown-btn"
-      onClick={() => setShowNotifications(false)}
-      style={{ fontSize: "1.2rem" }}
-    >
-      <FiX />
-    </button>
-  </div>
-</div>
+                    <div className="dropdown-header" style={{ alignItems: "center" }}>
+                      <h3 style={{ margin: 0, flex: 1 }}>Notifications</h3>
+                      <div className="header-actions-right" style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+
+                        <button
+                          className="clear-all-btn"
+                          onClick={() => setNotifications([])}
+                        >
+                          Clear
+                        </button>
+                        <button
+                          className="close-dropdown-btn"
+                          onClick={() => setShowNotifications(false)}
+                          style={{ fontSize: "1.2rem" }}
+                        >
+                          <FiX />
+                        </button>
+                      </div>
+                    </div>
                     <div className="notification-list">
                       {notifications.length > 0 ? (
                         notifications.map(notification => (
-                          <div 
-                            key={notification.id} 
+                          <div
+                            key={notification.id}
                             className={`notification-item ${notification.read ? 'read' : 'unread'}`}
                             onClick={() => markNotificationAsRead(notification.id)}
                           >
@@ -452,10 +394,10 @@ const [showProfile, setShowProfile] = useState(false);
                   </div>
                 )}
               </div>
-              
+
               {/* Settings */}
               <div className="settings-container">
-                <button 
+                <button
                   className="action-btn"
                   onClick={() => {
                     setShowSettings(!showSettings);
@@ -464,123 +406,123 @@ const [showProfile, setShowProfile] = useState(false);
                 >
                   <FiSettings />
                 </button>
-                
+
                 {showSettings && (
                   <div className="settings-dropdown">
                     <div className="dropdown-header">
                       <h3>Settings</h3>
-                      <button 
+                      <button
                         className="close-dropdown-btn"
                         onClick={() => setShowSettings(false)}
                       >
                         <FiX />
                       </button>
                     </div>
-                    
-                    
-                    
+
+
+
                     <div className="settings-option">
                       <div className="settings-label">
                         <FiGlobe />
                         <span>Language</span>
                       </div>
                       <div className="language-options">
-                        <button 
+                        <button
                           className={language === 'English' ? 'active' : ''}
                           onClick={() => changeLanguage('English')}
                         >
                           English
                         </button>
-                       
+
                       </div>
                     </div>
                   </div>
                 )}
               </div>
-              
+
               {/* User Profile */}
               <div
-  className="user-profile"
-  style={{ cursor: "pointer" }}
-  onClick={() => setShowProfile(true)}
->
-  <img
-    src="https://user-gen-media-assets.s3.amazonaws.com/gpt4o_images/d92aaad8-daf4-48e8-9313-bc4d45f82b91.png"
-    alt="Parent"
-    className="profile-avatar"
-  />
-  <div className="profile-info">
-    <span className="profile-name">{parentName}</span>
-    <span className="profile-role">tulasi</span>
-  </div>
-</div>
-{showProfile && (
-  <div
-    style={{
-      position: "fixed",
-      top: 0,
-      left: 0,
-      width: "100vw",
-      height: "100vh",
-      background: "rgba(0,0,0,0.3)",
-      zIndex: 2000,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center"
-    }}
-    onClick={() => setShowProfile(false)}
-  >
-    <div
-      style={{
-        background: "#fff",
-        borderRadius: "16px",
-        boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
-        padding: "2rem",
-        minWidth: "300px",
-        maxWidth: "90vw",
-        position: "relative"
-      }}
-      onClick={e => e.stopPropagation()}
-    >
-      <button
-        style={{
-          position: "absolute",
-          top: 12,
-          right: 12,
-          background: "transparent",
-          border: "none",
-          fontSize: "1.5rem",
-          cursor: "pointer"
-        }}
-        onClick={() => setShowProfile(false)}
-        aria-label="Close"
-      >
-        ×
-      </button>
-      <div style={{ textAlign: "center", marginBottom: "1rem" }}>
-        <img
-          src="https://user-gen-media-assets.s3.amazonaws.com/gpt4o_images/d92aaad8-daf4-48e8-9313-bc4d45f82b91.png"
-          alt="Parent"
-          style={{ width: 64, height: 64, borderRadius: "50%", marginBottom: "0.5rem" }}
-        />
-        <h3 style={{ margin: 0 }}>{parentName}</h3>
-      
-      </div>
-      <div style={{ marginTop: "1rem" }}>
-        <p><strong>Email:</strong> tulasi.kumar@example.com</p>
-        <p><strong>Contact:</strong> +91 9876543210</p>
-        <p><strong>Address:</strong> 45, MG Road, Visakhapatanam, Andhra Pradesh</p>
-      </div>
-    </div>
-  </div>
-)}
+                className="user-profile"
+                style={{ cursor: "pointer" }}
+                onClick={() => setShowProfile(true)}
+              >
+                <img
+                  src="https://user-gen-media-assets.s3.amazonaws.com/gpt4o_images/d92aaad8-daf4-48e8-9313-bc4d45f82b91.png"
+                  alt="Parent"
+                  className="profile-avatar"
+                />
+                <div className="profile-info">
+                  <span className="profile-name">{parentName}</span>
+                  <span className="profile-role">{parentData?.lastname || 'Parent'}</span>
+                </div>
+              </div>
+              {showProfile && (
+                <div
+                  style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    width: "100vw",
+                    height: "100vh",
+                    background: "rgba(0,0,0,0.3)",
+                    zIndex: 2000,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center"
+                  }}
+                  onClick={() => setShowProfile(false)}
+                >
+                  <div
+                    style={{
+                      background: "#fff",
+                      borderRadius: "16px",
+                      boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
+                      padding: "2rem",
+                      minWidth: "300px",
+                      maxWidth: "90vw",
+                      position: "relative"
+                    }}
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <button
+                      style={{
+                        position: "absolute",
+                        top: 12,
+                        right: 12,
+                        background: "transparent",
+                        border: "none",
+                        fontSize: "1.5rem",
+                        cursor: "pointer"
+                      }}
+                      onClick={() => setShowProfile(false)}
+                      aria-label="Close"
+                    >
+                      ×
+                    </button>
+                    <div style={{ textAlign: "center", marginBottom: "1rem" }}>
+                      <img
+                        src="https://user-gen-media-assets.s3.amazonaws.com/gpt4o_images/d92aaad8-daf4-48e8-9313-bc4d45f82b91.png"
+                        alt="Parent"
+                        style={{ width: 64, height: 64, borderRadius: "50%", marginBottom: "0.5rem" }}
+                      />
+                      <h3 style={{ margin: 0 }}>{parentName}</h3>
+
+                    </div>
+                    <div style={{ marginTop: "1rem" }}>
+                      <p><strong>Email:</strong> {parentData?.email || 'N/A'}</p>
+                      <p><strong>Contact:</strong> {parentData?.phonenumber || 'N/A'}</p>
+                      <p><strong>Address:</strong> {parentData?.address || 'N/A'}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </header>
 
-        {/* Main Content Area */}
+        {/* Main Content Area - Replace with Outlet */}
         <main className="content-area" ref={mainContentRef}>
-          {renderSection()}
+          <Outlet /> {/* This will render the nested route components */}
         </main>
       </div>
 

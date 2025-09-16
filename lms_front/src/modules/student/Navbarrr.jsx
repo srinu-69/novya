@@ -5,7 +5,7 @@
 // import { FaUserCircle, FaChevronDown } from 'react-icons/fa';
 // import './Navbarrr.css';
 // import novyaLogo from '../home/assets/NOVYA LOGO.png';
- 
+
 // const Navbar = () => {
 //   const [isOpen, setIsOpen] = useState(false);
 //   const [scrolled, setScrolled] = useState(false);
@@ -14,22 +14,22 @@
 //   const [classDropdownOpen, setClassDropdownOpen] = useState(false);
 //   const location = useLocation();
 //   const navigate = useNavigate();
- 
+
 //   useEffect(() => {
 //     const handleScroll = () => setScrolled(window.scrollY > 10);
 //     window.addEventListener('scroll', handleScroll);
 //     return () => window.removeEventListener('scroll', handleScroll);
 //   }, []);
- 
+
 //   useEffect(() => {
 //     setActiveLink(location.pathname);
 //     setIsOpen(false);
 //     setAvatarOpen(false);
 //     setClassDropdownOpen(false);
 //   }, [location.pathname]);
- 
+
 //   const handleLogout = () => navigate('/');
- 
+
 //   // ✅ Classroom dropdown with Learn, Recordings, Quizzies
 //   const navLinks = [
 //     { path: '/student/dashboard', name: 'Home' },
@@ -47,7 +47,7 @@
 //     { path: '/career', name: 'Career' },
 //     { path: '/mentorship', name: 'Mentorship' },
 //   ];
- 
+
 //   return (
 //     <motion.nav
 //       className={`navbar ${scrolled ? 'navbar-scrolled' : ''}`}
@@ -91,7 +91,7 @@
 //             </motion.span>
 //           </Link>
 //         </div>
- 
+
 //         {/* Desktop Links */}
 //         <div className="navbar-desktop-links">
 //           <ul>
@@ -150,7 +150,7 @@
 //             ))}
 //           </ul>
 //         </div>
- 
+
 //         {/* Avatar + Toggler */ }
 //         {/* <div className="navbar-end">
 //           <div className="navbar-avatar-container" onClick={() => setAvatarOpen(!avatarOpen)}>
@@ -177,7 +177,7 @@
 //       </div>
 //     )}
 //   </div>
- 
+
 //           <button
 //             className={`navbar-toggler ${isOpen ? 'open' : ''}`}
 //             onClick={() => setIsOpen(!isOpen)}
@@ -188,7 +188,7 @@
 //           </button>
 //         </div>
 //       </div>
- 
+
 //       {/* Mobile Menu */}
 //       <AnimatePresence>
 //         {isOpen && (
@@ -270,15 +270,8 @@
 //     </motion.nav>
 //   );
 // };
- 
+
 // export default Navbar;
-
-
-
-
-
-
-
 
 
 
@@ -296,6 +289,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeLink, setActiveLink] = useState('');
+  const [avatarOpen, setAvatarOpen] = useState(false);
   const [classDropdownOpen, setClassDropdownOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -309,22 +303,13 @@ const Navbar = () => {
   useEffect(() => {
     setActiveLink(location.pathname);
     setIsOpen(false);
+    setAvatarOpen(false);
     setClassDropdownOpen(false);
   }, [location.pathname]);
 
-  const handleLogout = () => {
-    // Clear any user data from localStorage if needed
-    localStorage.removeItem('userToken');
-    localStorage.removeItem('userRole');
-    navigate('/'); // Navigate to the public homepage
-  };
+  const handleLogout = () => navigate('/');
 
-  // Navigate directly to details page
-  const handleAvatarClick = () => {
-    navigate('/student/details');
-  };
-
-  // ✅ Student dashboard navigation links
+  // ✅ Classroom dropdown with Learn, Recordings, Quizzies
   const navLinks = [
     { path: '/student/dashboard', name: 'Home' },
     {
@@ -332,9 +317,11 @@ const Navbar = () => {
       name: 'Class Room',
       hasDropdown: true,
       dropdownItems: [
-        { path: '/learn', name: 'Learn' },
-        { path: '/learn/recordings', name: 'Recordings' },
-        { path: '/learn/quizzes', name: 'Quizzes' },
+        { path: '/learn', name: 'Class 7' },
+        { path: '/learn/class8', name: 'Class 8' },
+        { path: '/learn/class9', name: 'Class 9' },
+        { path: '/learn/class10', name: 'Class 10' },
+
       ],
     },
     { path: '/practice', name: 'Practice' },
@@ -386,15 +373,14 @@ const Navbar = () => {
           </Link>
         </div>
 
-        {/* Desktop Links - Student Dashboard Navigation */}
+        {/* Desktop Links */}
         <div className="navbar-desktop-links">
           <ul>
             {navLinks.map((link) => (
               <li
                 key={link.path}
-                className={`nav-item ${
-                  activeLink === link.path || (link.hasDropdown && activeLink.startsWith(link.path)) ? 'active' : ''
-                } ${link.hasDropdown ? 'has-dropdown' : ''}`}
+                className={`nav-item ${activeLink === link.path || (link.hasDropdown && activeLink.startsWith(link.path)) ? 'active' : ''
+                  } ${link.hasDropdown ? 'has-dropdown' : ''}`}
                 onMouseEnter={() => link.hasDropdown && setClassDropdownOpen(true)}
                 onMouseLeave={() => link.hasDropdown && setClassDropdownOpen(false)}
               >
@@ -445,21 +431,28 @@ const Navbar = () => {
           </ul>
         </div>
 
-        {/* Avatar + Logout + Toggler */}
-        <div className="navbar-end" style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-          {/* Avatar for viewing details */}
-        <div
-  className="navbar-avatar-container"
-  style={{ cursor: "pointer", marginLeft: "20px" }} // adjust the value as needed
-  onClick={handleAvatarClick}
-  title="View User Details"
->
-  <FaUserCircle size={30} className="navbar-avatar-icon" />
-</div>
+        {/* Avatar + Toggler */}
+        {/* <div className="navbar-end">
+          <div className="navbar-avatar-container" onClick={() => setAvatarOpen(!avatarOpen)}>
+            <FaUserCircle size={30} className="navbar-avatar-icon" />
+            {avatarOpen && (
+              <div className="avatar-dropdown">
+                <button onClick={handleLogout} className="logout-button">Logout</button>
+              </div>
+            )}
+          </div> */}
 
 
-      
-          {/* Mobile menu toggler */}
+        {/* Avatar + Toggler */}
+        <div className="navbar-end" style={{ display: "flex", alignItems: "center" }}>
+          <div
+            className="navbar-avatar-container"
+            style={{ marginLeft: "30px", cursor: "pointer" }}
+            onClick={() => navigate('/student/profile')}
+          >
+            <FaUserCircle size={30} className="navbar-avatar-icon" />
+          </div>
+
           <button
             className={`navbar-toggler ${isOpen ? 'open' : ''}`}
             onClick={() => setIsOpen(!isOpen)}
@@ -485,9 +478,8 @@ const Navbar = () => {
               {navLinks.map((link) => (
                 <li
                   key={link.path}
-                  className={`nav-item ${
-                    activeLink === link.path || (link.hasDropdown && activeLink.startsWith(link.path)) ? 'active' : ''
-                  }`}
+                  className={`nav-item ${activeLink === link.path || (link.hasDropdown && activeLink.startsWith(link.path)) ? 'active' : ''
+                    }`}
                 >
                   {link.hasDropdown ? (
                     <div className="mobile-dropdown-container">
@@ -542,7 +534,9 @@ const Navbar = () => {
                   )}
                 </li>
               ))}
-             
+              <li>
+                <button onClick={handleLogout} className="logout-button-mobile">Logout</button>
+              </li>
             </ul>
           </motion.div>
         )}
