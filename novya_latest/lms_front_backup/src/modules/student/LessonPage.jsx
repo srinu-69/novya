@@ -1,0 +1,2330 @@
+
+// import React, { useState, useEffect, useRef } from 'react';
+// import { useParams, useNavigate } from 'react-router-dom';
+// import { 
+//   ArrowLeft, 
+//   CheckCircle, 
+//   FileText, 
+//   MessageCircle, 
+//   Clock, 
+//   Lock, 
+//   ChevronRight,
+//   X,
+//   AlertCircle,
+//   Play
+// } from 'lucide-react';
+
+// const LessonPage = () => {
+//   const { subject, chapterNumber } = useParams();
+//   const navigate = useNavigate();
+//   const [currentTime, setCurrentTime] = useState(0);
+//   const videoRef = useRef(null);
+//   const [isVideoCompleted, setIsVideoCompleted] = useState(false);
+//   const [showPdf, setShowPdf] = useState(false);
+//   const [showQuiz, setShowQuiz] = useState(false);
+//   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+//   const [selectedAnswer, setSelectedAnswer] = useState(null);
+//   const [quizScore, setQuizScore] = useState(0);
+//   const [quizCompleted, setQuizCompleted] = useState(false);
+//   const [remainingChances, setRemainingChances] = useState(3);
+//   const [lastAttemptDate, setLastAttemptDate] = useState(null);
+  
+//   // Centralized state for the checklist
+//   const [checklistStatus, setChecklistStatus] = useState({
+//     videoWatched: false,
+//     practiceAttempted: false,
+//     quizPassed: false
+//   });
+
+//   // Sample quiz questions for each subject and chapter
+//   const quizQuestions = {
+//     Maths: {
+//       1: [
+//         {
+//           question: "What is the place value of 7 in the number 3,74,581?",
+//           options: ["Thousands", "Ten Thousands", "Hundred Thousands", "Ones"],
+//           correctAnswer: 1
+//         },
+//         {
+//           question: "Which of these is the largest number?",
+//           options: ["99,999", "1,00,000", "9,999", "99,99,999"],
+//           correctAnswer: 3
+//         },
+//         {
+//           question: "How do you write five lakh twenty thousand in numerals?",
+//           options: ["5,20,000", "5,02,000", "5,00,200", "50,20,000"],
+//           correctAnswer: 0
+//         }
+//       ],
+//       2: [
+//         {
+//           question: "What is the result of 15 + 7 × 3?",
+//           options: ["66", "36", "44", "56"],
+//           correctAnswer: 1
+//         },
+//         {
+//           question: "Which operation should be performed first in the expression: 8 + (12 ÷ 4) × 2?",
+//           options: ["Addition", "Multiplication", "Division", "Subtraction"],
+//           correctAnswer: 2
+//         },
+//         {
+//           question: "What is the value of 20 - (5 × 2) + 3?",
+//           options: ["13", "17", "23", "33"],
+//           correctAnswer: 0
+//         }
+//       ],
+//       3: [
+//         {
+//           question: "What is a point in geometry?",
+//           options: ["A location with no size", "A straight path", "A flat surface", "A line with two endpoints"],
+//           correctAnswer: 0
+//         },
+//         {
+//           question: "What is a ray?",
+//           options: ["A line with two endpoints", "A part of a line with one endpoint", "A curved path", "A flat surface"],
+//           correctAnswer: 1
+//         },
+//         {
+//           question: "How many dimensions does a point have?",
+//           options: ["Zero", "One", "Two", "Three"],
+//           correctAnswer: 0
+//         }
+//       ],
+//       4: [
+//         {
+//           question: "What is the value of x in the expression 2x + 5 = 15?",
+//           options: ["5", "10", "7.5", "5.5"],
+//           correctAnswer: 0
+//         },
+//         {
+//           question: "Solve for y: 3y - 2 = 10.",
+//           options: ["2", "3", "4", "5"],
+//           correctAnswer: 2
+//         },
+//         {
+//           question: "If a + 7 = 13, what is the value of a?",
+//           options: ["4", "5", "6", "7"],
+//           correctAnswer: 2
+//         }
+//       ],
+//       5: [
+//         {
+//           question: "How many endpoints does a line have?",
+//           options: ["0", "1", "2", "Infinite"],
+//           correctAnswer: 0
+//         },
+//         {
+//           question: "A line segment is part of a:",
+//           options: ["Ray", "Point", "Line", "Plane"],
+//           correctAnswer: 2
+//         },
+//         {
+//           question: "Which of these extends infinitely in only one direction?",
+//           options: ["Line", "Ray", "Line Segment", "Point"],
+//           correctAnswer: 1
+//         }
+//       ]
+//     },
+//     Science: {
+//       1: [
+//         {
+//           question: "Which century is known as the 'Age of Science'?",
+//           options: ["18th Century", "19th Century", "20th Century", "21st Century"],
+//           correctAnswer: 2
+//         },
+//         {
+//           question: "Who is known as the father of modern science?",
+//           options: ["Albert Einstein", "Galileo Galilei", "Isaac Newton", "Marie Curie"],
+//           correctAnswer: 1
+//         },
+//         {
+//           question: "Which invention revolutionized communication in the 20th century?",
+//           options: ["Telephone", "Internet", "Printing Press", "Television"],
+//           correctAnswer: 1
+//         }
+//       ],
+//       2: [
+//         {
+//           question: "Which of these is a chemical property?",
+//           options: ["Color", "Flammability", "Density", "Hardness"],
+//           correctAnswer: 1
+//         },
+//         {
+//           question: "What is the state of matter where particles are tightly packed and vibrate in fixed positions?",
+//           options: ["Liquid", "Gas", "Solid", "Plasma"],
+//           correctAnswer: 2
+//         },
+//         {
+//           question: "The process by which a solid changes directly into a gas is called:",
+//           options: ["Melting", "Evaporation", "Sublimation", "Condensation"],
+//           correctAnswer: 2
+//         }
+//       ],
+//       3: [
+//         {
+//           question: "What is the unit of electric current?",
+//           options: ["Volt", "Ampere", "Ohm", "Watt"],
+//           correctAnswer: 1
+//         },
+//         {
+//           question: "Which component is used to break or make an electric circuit?",
+//           options: ["Battery", "Wire", "Switch", "Bulb"],
+//           correctAnswer: 2
+//         },
+//         {
+//           question: "What is the flow of electric charge called?",
+//           options: ["Voltage", "Resistance", "Current", "Power"],
+//           correctAnswer: 2
+//         }
+//       ],
+//       4: [
+//         {
+//           question: "Which metal is liquid at room temperature?",
+//           options: ["Iron", "Mercury", "Gold", "Copper"],
+//           correctAnswer: 1
+//         },
+//         {
+//           question: "Which of these is a good conductor of electricity?",
+//           options: ["Wood", "Plastic", "Copper", "Rubber"],
+//           correctAnswer: 2
+//         },
+//         {
+//           question: "What property makes metals suitable for making bells?",
+//           options: ["Ductility", "Malleability", "Sonorousness", "Lustre"],
+//           correctAnswer: 2
+//         }
+//       ],
+//       5: [
+//         {
+//           question: "Which of these is a chemical change?",
+//           options: ["Melting ice", "Dissolving sugar", "Burning wood", "Breaking glass"],
+//           correctAnswer: 2
+//         },
+//         {
+//           question: "In a physical change, what changes?",
+//           options: ["Chemical composition", "State or appearance", "Both chemical composition and state", "Nothing"],
+//           correctAnswer: 1
+//         },
+//         {
+//           question: "Rusting of iron is an example of a:",
+//           options: ["Physical change", "Chemical change", "Reversible change", "No change"],
+//           correctAnswer: 1
+//         }
+//       ]
+//     },
+//     Social: {
+//       1: [
+//         {
+//           question: "What period does 'A Thousand Years' refer to in Indian history?",
+//           options: ["700-1700 CE", "500-1500 CE", "1000-2000 CE", "800-1800 CE"],
+//           correctAnswer: 0
+//         },
+//         {
+//           question: "Which language was predominantly used for administrative purposes during the Delhi Sultanate?",
+//           options: ["Sanskrit", "Persian", "Arabic", "Urdu"],
+//           correctAnswer: 1
+//         },
+//         {
+//           question: "What was the main source of information about the past for historians?",
+//           options: ["Coins", "Inscriptions", "Manuscripts", "All of the above"],
+//           correctAnswer: 3
+//         }
+//       ],
+//       2: [
+//         {
+//           question: "Which was the first major kingdom in South India?",
+//           options: ["Chola", "Pandya", "Chera", "Satavahana"],
+//           correctAnswer: 3
+//         },
+//         {
+//           question: "Who was a prominent ruler of the Chola dynasty?",
+//           options: ["Rajendra Chola I", "Ashoka", "Harsha", "Chandragupta Maurya"],
+//           correctAnswer: 0
+//         },
+//         {
+//           question: "The Rashtrakutas were known for their contributions to:",
+//           options: ["Art and Architecture", "Trade Routes", "Military Strategy", "Farming Techniques"],
+//           correctAnswer: 0
+//         }
+//       ],
+//       3: [
+//         {
+//           question: "Who was the first Sultan of Delhi?",
+//           options: ["Iltutmish", "Qutb-ud-din Aibak", "Balban", "Alauddin Khilji"],
+//           correctAnswer: 1
+//         },
+//         {
+//           question: "Which monument was built by Qutb-ud-din Aibak?",
+//           options: ["Red Fort", "Qutb Minar", "Humayun's Tomb", "Agra Fort"],
+//           correctAnswer: 1
+//         },
+//         {
+//           question: "Raziya Sultan was the daughter of which Sultan?",
+//           options: ["Ghiyas ud din Balban", "Iltutmish", "Nasir ud din Mahmud", "Alauddin Khalji"],
+//           correctAnswer: 1
+//         }
+//       ],
+//       4: [
+//         {
+//           question: "Who was the first Mughal emperor?",
+//           options: ["Akbar", "Babur", "Humayun", "Jahangir"],
+//           correctAnswer: 1
+//         },
+//         {
+//           question: "The Battle of Panipat (1526) was fought between Babur and:",
+//           options: ["Sher Shah Suri", "Ibrahim Lodi", "Hem Chandra Vikramaditya", "Rana Sanga"],
+//           correctAnswer: 1
+//         },
+//         {
+//           question: "Akbar's revenue minister was:",
+//           options: ["Birbal", "Faizi", "Raja Todar Mal", "Tansen"],
+//           correctAnswer: 2
+//         }
+//       ],
+//       5: [
+//         {
+//           question: "Which ruler built the Taj Mahal?",
+//           options: ["Akbar", "Shah Jahan", "Aurangzeb", "Jahangir"],
+//           correctAnswer: 1
+//         },
+//         {
+//           question: "The Red Fort in Delhi was built by:",
+//           options: ["Humayun", "Akbar", "Shah Jahan", "Aurangzeb"],
+//           correctAnswer: 2
+//         },
+//         {
+//           question: "The Qutb Minar was started by Qutb-ud-din Aibak and completed by:",
+//           options: ["Firoz Shah Tughlaq", "Iltutmish", "Alauddin Khalji", "Ghiyas ud din Balban"],
+//           correctAnswer: 1
+//         }
+//       ]
+//     },
+//     English: {
+//       1: [
+//         {
+//           question: "Which of the following is a common noun?",
+//           options: ["Table", "London", "John", "Amazon"],
+//           correctAnswer: 0
+//         },
+//         {
+//           question: "Identify the verb in the sentence: 'She sings beautifully.'",
+//           options: ["She", "sings", "beautifully", "the"],
+//           correctAnswer: 1
+//         },
+//         {
+//           question: "A proper noun always begins with a:",
+//           options: ["Lowercase letter", "Uppercase letter", "Vowel", "Consonant"],
+//           correctAnswer: 1
+//         }
+//       ],
+//       2: [
+//         {
+//           question: "What is a synonym for 'happy'?",
+//           options: ["Sad", "Joyful", "Angry", "Tired"],
+//           correctAnswer: 1
+//         },
+//         {
+//           question: "Which of these is an antonym for 'fast'?",
+//           options: ["Quick", "Rapid", "Slow", "Speedy"],
+//           correctAnswer: 2
+//         },
+//         {
+//           question: "The word 'tiny' is a synonym for:",
+//           options: ["Large", "Huge", "Small", "Giant"],
+//           correctAnswer: 2
+//         }
+//       ],
+//       3: [
+//         {
+//           question: "Which of the following is a preposition?",
+//           options: ["Run", "Quickly", "Under", "And"],
+//           correctAnswer: 2
+//         },
+//         {
+//           question: "In the sentence 'The cat sat on the mat,' what is the adjective?",
+//           options: ["Cat", "Sat", "On", "None of the above"],
+//           correctAnswer: 3
+//         },
+//         {
+//           question: "An adverb usually describes a:",
+//           options: ["Noun", "Verb", "Pronoun", "Preposition"],
+//           correctAnswer: 1
+//         }
+//       ],
+//       4: [
+//         {
+//           question: "What is the past tense of the verb 'go'?",
+//           options: ["Goes", "Gone", "Went", "Going"],
+//           correctAnswer: 2
+//         },
+//         {
+//           question: "Which of these is a collective noun?",
+//           options: ["Book", "Tree", "Flock", "Car"],
+//           correctAnswer: 2
+//         },
+//         {
+//           question: "A sentence that expresses a strong emotion is called an:",
+//           options: ["Interrogative sentence", "Imperative sentence", "Exclamatory sentence", "Declarative sentence"],
+//           correctAnswer: 2
+//         }
+//       ],
+//       5: [
+//         {
+//           question: "What punctuation mark is used at the end of a question?",
+//           options: ["Period", "Comma", "Question mark", "Exclamation mark"],
+//           correctAnswer: 2
+//         },
+//         {
+//           question: "Which of these is a conjunction?",
+//           options: ["Jump", "But", "Loudly", "Beautiful"],
+//           correctAnswer: 1
+//         },
+//         {
+//           question: "The subject of a sentence is usually a:",
+//           options: ["Verb or Adverb", "Noun or Pronoun", "Adjective or Preposition", "Conjunction or Interjection"],
+//           correctAnswer: 1
+//         }
+//       ]
+//     },
+//     Computer: {
+//       1: [
+//         {
+//           question: "What does CPU stand for?",
+//           options: ["Central Process Unit", "Central Processing Unit", "Computer Personal Unit", "Central Power Unit"],
+//           correctAnswer: 1
+//         },
+//         {
+//           question: "Which of these is an input device?",
+//           options: ["Monitor", "Printer", "Keyboard", "Speaker"],
+//           correctAnswer: 2
+//         },
+//         {
+//           question: "The brain of the computer is the:",
+//           options: ["Monitor", "Keyboard", "Mouse", "CPU"],
+//           correctAnswer: 3
+//         }
+//       ],
+//       2: [
+//         {
+//           question: "What is RAM primarily used for in a computer?",
+//           options: ["Long-term storage", "Temporary data storage", "Printing documents", "Displaying images"],
+//           correctAnswer: 1
+//         },
+//         {
+//           question: "Which operating system is developed by Microsoft?",
+//           options: ["macOS", "Linux", "Windows", "Android"],
+//           correctAnswer: 2
+//         },
+//         {
+//           question: "An operating system is a type of:",
+//           options: ["Hardware", "Application Software", "System Software", "Utility Software"],
+//           correctAnswer: 2
+//         }
+//       ],
+//       3: [
+//         {
+//           question: "What is the full form of WWW?",
+//           options: ["World Wide Web", "World Web Windows", "Web World Wide", "Wide World Web"],
+//           correctAnswer: 0
+//         },
+//         {
+//           question: "Which protocol is used to send emails?",
+//           options: ["HTTP", "FTP", "SMTP", "TCP/IP"],
+//           correctAnswer: 2
+//         },
+//         {
+//           question: "A collection of interconnected networks is known as the:",
+//           options: ["Intranet", "Extranet", "Internet", "LAN"],
+//           correctAnswer: 2
+//         }
+//       ],
+//       4: [
+//         {
+//           question: "Which software is used for creating documents, spreadsheets, and presentations?",
+//           options: ["Antivirus", "Operating System", "Office Suite", "Web Browser"],
+//           correctAnswer: 2
+//         },
+//         {
+//           question: "What is a 'bug' in computer programming?",
+//           options: ["A computer virus", "An error in the code", "A type of software", "A hardware component"],
+//           correctAnswer: 1
+//         },
+//         {
+//           question: "Compilers and interpreters are examples of:",
+//           options: ["Application software", "System software", "Utility programs", "Hardware"],
+//           correctAnswer: 1
+//         }
+//       ],
+//       5: [
+//         {
+//           question: "What does 'HTTP' stand for?",
+//           options: ["HyperText Transfer Protocol", "Hyper Transfer Text Protocol", "High Technology Transfer Program", "Home Text Transfer Protocol"],
+//           correctAnswer: 0
+//         },
+//         {
+//           question: "Which device is used to connect multiple computers in a local area network (LAN)?",
+//           options: ["Modem", "Router", "Switch", "Server"],
+//           correctAnswer: 2
+//         },
+//         {
+//           question: "What is cybersecurity primarily concerned with?",
+//           options: ["Making computers faster", "Protecting computer systems from theft and damage", "Designing new computer hardware", "Creating software applications"],
+//           correctAnswer: 1
+//         }
+//       ]
+//     }
+//   };
+
+//   const videos = {
+//     Maths: {
+//       1: { title: "Large Numbers", file: "/videos/Maths/chapter-1.mp4", pdf: "/pdfs/maths/maths ch-1.pdf", about: "Learn about large numbers, their place values, and representation." },
+//       2: { title: "Arithmetic Expressions", file: "/videos/Maths/chapter-2.mp4", pdf: "/pdfs/maths/maths ch-2.pdf", about: "Understand arithmetic expressions and step-by-step solving." },
+//       3: { title: "Peek Point", file: "/videos/Maths/chapter-3.mp4", pdf: "/pdfs/maths/maths ch-3.pdf", about: "Explore fundamental geometry concepts like points, lines, and rays." },
+//       4: { title: "Number Expressions", file: "/videos/Maths/chapter-4.mp4", pdf: "/pdfs/maths/maths ch-4.pdf", about: "Dive into solving simple algebraic equations with one variable." },
+//       5: { title: "Lines and Angles", file: "/videos/Maths/chapter-5.mp4", pdf: "/pdfs/maths/maths ch-5.pdf", about: "Introduction to lines, line segments, rays, and basic angles." },
+//     },
+//     Science: {
+//       1: { title: "Age of Science", file: "/videos/science/chapter-1.mp4", pdf: "/pdfs/science/7-Science-chpt-1.pdf", about: "Discover the role of science in human progress and historical context." },
+//       2: { title: "Substances", file: "/videos/science/chapter-2.mp4", pdf: "/pdfs/science/7-Science-chpt-2.pdf", about: "Learn about different states of matter and their properties." },
+//       3: { title: "Electricity Basics", file: "/videos/science/chapter-3.mp4", pdf: "/pdfs/science/7-Science-chpt-3.pdf", about: "Basics of electricity, current, circuits, and components." },
+//       4: { title: "Metals & Non-metals", file: "/videos/science/chapter-4.mp4", pdf: "/pdfs/science/7-Science-chpt-4.pdf", about: "Study the properties, uses, and differences between metals and non-metals." },
+//       5: { title: "Physical & Chemical Changes", file: "/videos/science/chapter-5.mp4", pdf: "/pdfs/science/7-Science-chpt-5.pdf", about: "Differentiate physical changes from chemical changes with examples." },
+//     },
+//     Social: {
+//       1: { title: "Tracing Changes", file: "/videos/social/chapter1 (online-video-cutter.com).mp4", pdf: "/pdfs/social/History (1)Tracing Changes Through A Thousand Years.pdf", about: "Explore historical changes and sources over a thousand years in India." },
+//       2: { title: "New Kings & Kingdoms", file: "/videos/social/chpter2social.mp4", pdf: "/pdfs/social/History (2)New Kings And Kingdoms.pdf", about: "Learn about the rise of various kingdoms in medieval India." },
+//       3: { title: "The Delhi Sultans", file: "/videos/social/social_ch3.mp4.mp4", pdf: "/pdfs/social/History (3)The Delhi Sultans.pdf", about: "Know about the Delhi Sultans, their administration, and monuments." },
+//       4: { title: "The Mughal Empire", file: "/videos/social/social_ch4.mp4.mp4", pdf: "/pdfs/social/History (4)The Mughal Empire.pdf", about: "A detailed look into the Mughal Empire, its rulers, and policies." },
+//       5: { title: "Rulers and Buildings", file: "/videos/social/social_ch5.mp4.mp4", pdf: "/pdfs/social/History (5)Rulers and Buildings.pdf", about: "Study the architectural marvels and ruling strategies of various historical rulers." },
+//     },
+//     English: {
+//       1: { title: "Learning Together", file: "/videos/english/7th english unit -1 LEARNING TOGETHER (2).mp4", pdf: "/pdfs/english/7th english  unit -1 LEARNING TOGETHER.pdf", about: "Understand the basics of nouns, pronouns, and their usage in sentences." },
+//       2: { title: "Wit And Humour", file: "/videos/english/7th english unit -1 LEARNING TOGETHER.mp4", pdf: "/pdfs/english/7th english unit -2 WIT AND HUMOUR.pdf", about: "Explore verbs, different tenses, and how they change meaning." },
+//       3: { title: "Dreams And Discoveries", file: "/videos/english/english_3.mp4", pdf: "/pdfs/english/7th english unit -3 DREAMS & DISCOVERS.pdf", about: "Learn to identify and use adjectives and adverbs to describe words effectively." },
+//       4: { title: "Travel And Adventure", file: "/videos/english/english_4.mp4", pdf: "/pdfs/english/7th english unit -4 TRAVEL & ADVENTURE.pdf", about: "Understand the role of prepositions in showing relationships and conjunctions in joining sentences." },
+//       5: { title: "Brave Hearts", file: "/videos/english/english_5.mp4", pdf: "/pdfs/english/7th english unit -5 BRAVEHEARTS.pdf", about: "Master different sentence structures and the correct use of punctuation marks." },
+//     },
+//     Computer: {
+//       1: { title: "Microsoft word", file: "/videos/Computer/chapter-1.mp4", pdf: "/pdfs/computer/computer-ch1.pdf", about: "Microsoft Word is a word-processing software used to create, edit, format, and share text documents." },
+//       2: { title: "Text Editing", file: "/videos/Computer/chapter-2.mp4", pdf: "/pdfs/computer/computer-ch2.pdf", about: "Text editing is the process of creating, modifying, and formatting written content using a text editor or word processor." },
+//       3: { title: "MS Word Pictures", file: "/videos/Computer/chapter-3.mp4", pdf: "/pdfs/computer/computer-ch3.pdf", about: "Microsoft Word, pictures can be inserted and formatted to enhance the appearance and meaning of a document." },
+//       4: { title: "MS Word Smart Art", file: "/videos/Computer/chapter-4.mp4", pdf: "/pdfs/computer/computer-ch4.pdf", about: "SmartArt in Microsoft Word is a feature that lets you create diagrams and visuals to represent information effectively." },
+//       5: { title: "Smart Art Editing", file: "/videos/Computer/chapter-5.mp4", pdf: "/pdfs/computer/computer-ch5.pdf", about: "SmartArt editing in Microsoft Word allows you to modify shapes, colors, layouts, and text within a diagram to better present information." },
+//     }
+    
+//   };
+//   useEffect(() => {
+//     const today = new Date().toDateString();
+//     const storedDate = localStorage.getItem('lastAttemptDate');
+//     const storedChances = localStorage.getItem('remainingChances');
+//     if (storedDate === today) {
+//       setRemainingChances(parseInt(storedChances) || 3);
+//     } else {
+//       setRemainingChances(3);
+//       localStorage.setItem('remainingChances', '3');
+//       localStorage.setItem('lastAttemptDate', today);
+//     }
+//   }, []);
+
+//   // Update checklist when video is completed
+//   useEffect(() => {
+//     if (isVideoCompleted) {
+//       setChecklistStatus(prev => ({
+//         ...prev,
+//         videoWatched: true
+//       }));
+//     }
+//   }, [isVideoCompleted]);
+
+//   const currentLesson = videos[subject]?.[chapterNumber] || {
+//     title: "Lesson Not Found",
+//     file: "",
+//     about: ""
+//   };
+
+//   const questions = quizQuestions[subject]?.[chapterNumber] || [];
+
+//   const lessons = Object.keys(videos[subject] || {}).map((id) => ({
+//     id,
+//     title: videos[subject][id].title,
+//     status: parseInt(id) < parseInt(chapterNumber) ? "completed" 
+//            : parseInt(id) === parseInt(chapterNumber) ? "current" : "next"
+//   }));
+
+//   const checklistItems = [
+//     { id: 1, task: `Watch full video of ${currentLesson.title}`, status: checklistStatus.videoWatched ? "completed" : "in-progress" },
+//     { id: 2, task: "Attempt practice quiz", status: checklistStatus.practiceAttempted ? "completed" : "pending" },
+//   ];
+
+//   const practiceQuestions = [
+//     { id: 1, question: `Practice questions for ${currentLesson.title}` },
+//   ];
+
+//   const handleSeek = (time) => {
+//     if (videoRef.current) {
+//       videoRef.current.currentTime = time;
+//       videoRef.current.play();
+//     }
+//   };
+
+//   const handleGoBack = () => {
+//     navigate('/learn');
+//   };
+
+//   const handleChapterClick = (chapterId) => {
+//     navigate(`/lesson/${subject}/${chapterId}`);
+//   };
+
+//   const handleVideoEnd = () => {
+//     setIsVideoCompleted(true);
+//   };
+
+//   const handleStartQuiz = () => {
+//     if (remainingChances > 0) {
+//       setShowQuiz(true);
+//       setCurrentQuestionIndex(0);
+//       setSelectedAnswer(null);
+//       setQuizScore(0);
+//       setQuizCompleted(false);
+//     }
+//   };
+
+//   const handleAnswerSelect = (index) => {
+//     setSelectedAnswer(index);
+//   };
+
+//   const handleNextQuestion = () => {
+//     if (selectedAnswer === questions[currentQuestionIndex].correctAnswer) {
+//       setQuizScore(prevScore => prevScore + 1);
+//     }
+//     if (currentQuestionIndex < questions.length - 1) {
+//       setCurrentQuestionIndex(currentQuestionIndex + 1);
+//       setSelectedAnswer(null);
+//     } else {
+//       setQuizCompleted(true);
+//       const newChances = remainingChances - 1;
+//       setRemainingChances(newChances);
+//       localStorage.setItem('remainingChances', newChances.toString());
+//       const finalScore = quizScore + (selectedAnswer === questions[currentQuestionIndex].correctAnswer ? 1 : 0);
+//       const isPassed = finalScore >= Math.ceil(questions.length * 0.8);
+//       setChecklistStatus(prev => ({
+//         ...prev,
+//         practiceAttempted: true,
+//         quizPassed: isPassed
+//       }));
+//     }
+//   };
+
+//   const handleCloseQuiz = () => {
+//     setShowQuiz(false);
+//   };
+
+//   const handleRetryQuiz = () => {
+//     if (remainingChances > 0) {
+//       setCurrentQuestionIndex(0);
+//       setSelectedAnswer(null);
+//       setQuizScore(0);
+//       setQuizCompleted(false);
+//     }
+//   };
+
+//   return (
+//     <>
+//       {/* Responsive styles */}
+//       <style>
+//       {`
+//         .lesson-content {
+//           display: flex;
+//           gap: 24px;
+//           padding: 24px;
+//         }
+//         .lesson-left {
+//           flex: 2;
+//           min-width: 0;
+//         }
+//         .lesson-right {
+//           width: 320px;
+//           min-width: 320px;
+//         }
+//         @media (max-width: 768px) {
+//           .lesson-content {
+//             flex-direction: column;
+//             gap: 0;
+//             padding: 12px;
+//           }
+//           .lesson-left,
+//           .lesson-right {
+//             width: 100%;
+//             min-width: 0;
+//           }
+//           .lesson-right {
+//             display: flex;
+//             flex-direction: column;
+//             gap: 16px;
+//             width: 100%;
+//             min-width: 0;
+//             margin-top: 20px;
+//           }
+//           .lesson-right > div {
+//             width: 100%;
+//           }
+//         }
+//         /* Hide download button from video controls */
+//         video::-webkit-media-controls-download-button {
+//           display: none;
+//         }
+//         video::-webkit-media-controls-enclosure {
+//           overflow: hidden;
+//         }
+//         video::-moz-media-controls-panel {
+//           display: flex;
+//         }
+//         video::-moz-media-controls-download-button {
+//           display: none;
+//         }
+//         /* Additional CSS to ensure download option is hidden */
+//         video {
+//           controlsList: "nodownload";
+//         }
+//       `}
+//       </style>
+//       <div style={{ fontFamily: 'Arial, sans-serif', backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+//         {/* Header */}
+//         <div style={{ backgroundColor: 'white', padding: '100px 32px', borderBottom: '1px solid #e5e7eb',
+//                       display: 'flex', alignItems: 'center', gap: '16px' }}>
+//           <ArrowLeft size={20} style={{ cursor: 'pointer', color: '#6b7280' }} onClick={handleGoBack} />
+//           <h1 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
+//             {subject} • {currentLesson.title}
+//           </h1>
+//         </div>
+//         <div className="lesson-content">
+//           {/* Left section: video, about, PDF, checklist, practice */}
+//           <div className="lesson-left">
+//             <div style={{ marginBottom: '24px' }}>
+//               <h2 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937' }}>
+//                 Video: {currentLesson.title}
+//               </h2>
+//               <video
+//                 ref={videoRef}
+//                 src={currentLesson.file}
+//                 controls
+//                 controlsList="nodownload"
+//                 width="100%"
+//                 style={{ borderRadius: "8px", backgroundColor: "#000", marginTop: "12px" }}
+//                 onTimeUpdate={(e) => setCurrentTime(e.target.currentTime)}
+//                 onEnded={handleVideoEnd}
+//               />
+//             </div>
+//             <div style={{ backgroundColor: "white", padding: "16px", borderRadius: "8px", marginBottom: "20px", border: "1px solid #e5e7eb" }}>
+//               <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "10px", color: "#1f2937" }}>📘 About</h3>
+//               <p style={{ fontSize: "14px", color: "#4b5563", lineHeight: "1.6" }}>
+//                 {currentLesson.about || "No description available."}
+//               </p>
+//             </div>
+//             {currentLesson.pdf && (
+//               <div style={{ marginTop: "20px" }}>
+//                 {!showPdf && (
+//                   <button
+//                     onClick={() => setShowPdf(true)}
+//                     style={{
+//                       backgroundColor: "#0f766e",
+//                       color: "white",
+//                       padding: "10px 16px",
+//                       border: "none",
+//                       borderRadius: "6px",
+//                       cursor: "pointer",
+//                       fontSize: "14px",
+//                     }}
+//                   >
+//                     📖 View Lesson PDF
+//                   </button>
+//                 )}
+//                 {showPdf && (
+//                   <div>
+//                     <iframe
+//                       id="lessonPdfFrame"
+//                       src={`${currentLesson.pdf}#view=FitH&scrollbar=1&toolbar=0`}
+//                       title="Lesson PDF"
+//                       style={{
+//                         width: "100%",
+//                         height: "500px",
+//                         border: "1px solid #e5e7eb",
+//                         borderRadius: "8px",
+//                         overflow: "auto",
+//                       }}
+//                     />
+//                     <div style={{ marginTop: "12px", display: "flex", gap: "10px" }}>
+//                       <a
+//                         href={currentLesson.pdf}
+//                         download
+//                         style={{
+//                           backgroundColor: "#0f766e",
+//                           color: "white",
+//                           textDecoration: "none",
+//                           padding: "10px 16px",
+//                           borderRadius: "6px",
+//                           fontSize: "14px",
+//                           cursor: "pointer",
+//                         }}
+//                       >
+//                         📥 Download Lesson PDF
+//                       </a>
+//                       <button
+//                         onClick={() => setShowPdf(false)}
+//                         style={{
+//                           backgroundColor: "#dc2626",
+//                           color: "white",
+//                           padding: "10px 16px",
+//                           border: "none",
+//                           borderRadius: "6px",
+//                           cursor: "pointer",
+//                           fontSize: "14px",
+//                         }}
+//                       >
+//                         ❌ Close PDF
+//                       </button>
+//                     </div>
+//                   </div>
+//                 )}
+//               </div>
+//             )}
+//             <div style={{ display: 'flex', gap: '24px', marginTop: "24px", flexWrap: 'wrap' }}>
+//               <div style={{
+//                 flex: 1,
+//                 backgroundColor: 'white',
+//                 borderRadius: '12px',
+//                 boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+//                 padding: '20px',
+//                 border: '1px solid #e5e7eb',
+//                 marginBottom: '20px'
+//               }}>
+//                 <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+//                   <FileText size={20}/> Lesson Checklist
+//                 </h3>
+//                 {checklistItems.map((item) => (
+//                   <div key={item.id} style={{ padding: '12px 0', borderBottom: '1px solid #f3f4f6', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+//                     <span style={{ fontSize: '14px', color: '#4b5563' }}>{item.task}</span>
+//                     <span style={{ 
+//                       fontSize: '12px', 
+//                       padding: '4px 8px', 
+//                       borderRadius: '12px',
+//                       background: item.status === "completed" ? "#10b981" : 
+//                                  item.status === "in-progress" ? "#ec4899" : "#e5e7eb",
+//                       color: item.status === "completed" || item.status === "in-progress" ? "white" : "#6b7280" 
+//                     }}>
+//                       {item.status}
+//                     </span>
+//                   </div>
+//                 ))}
+//               </div>
+//               <div style={{
+//                 flex: 1,
+//                 backgroundColor: 'white',
+//                 borderRadius: '12px',
+//                 boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+//                 padding: '20px',
+//                 border: '1px solid #e5e7eb',
+//                 marginBottom: '20px'
+//               }}>
+//                 <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', marginBottom: '16px' }}>
+//                   Quick Practice
+//                 </h3>
+//                 <div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+//                   <AlertCircle size={16} color="#f59e0b" />
+//                   <span style={{ fontSize: '14px', color: '#f59e0b' }}>
+//                     {remainingChances} {remainingChances === 1 ? 'chance' : 'chances'} remaining today
+//                   </span>
+//                 </div>
+//                 {practiceQuestions.map((q) => (
+//                   <div key={q.id} style={{ padding: '12px 0', borderBottom: '1px solid #f3f4f6', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+//                     <span style={{ fontSize: '14px', color: '#4b5563' }}>{q.question}</span>
+//                     <button 
+//                       onClick={handleStartQuiz}
+//                       disabled={remainingChances <= 0}
+//                       style={{ 
+//                         backgroundColor: remainingChances > 0 ? "#0f766e" : "#9ca3af", 
+//                         color: "white", 
+//                         border: "none", 
+//                         borderRadius: "4px", 
+//                         padding: "6px 12px",
+//                         cursor: remainingChances > 0 ? "pointer" : "not-allowed",
+//                         display: "flex",
+//                         alignItems: "center",
+//                         gap: "4px"
+//                       }}
+//                     >
+//                       <Play size={14} />
+//                       {remainingChances > 0 ? "Start" : "No chances"}
+//                     </button>
+//                   </div>
+//                 ))}
+//               </div>
+//             </div>
+//           </div>
+//           {/* Right section: lesson outline and AI assistant (now appears below video on mobile) */}
+//           <div className="lesson-right">
+//             <div style={{ 
+//               backgroundColor: 'white',
+//               borderRadius: '12px',
+//               boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+//               padding: '20px',
+//               marginBottom: '20px',
+//               border: '1px solid #e5e7eb'
+//             }}>
+//               <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+//                 <FileText size={20} />
+//                 Lesson Outline
+//               </h3>
+//               {lessons.map((lesson) => (
+//                 <div 
+//                   key={lesson.id} 
+//                   onClick={() => handleChapterClick(lesson.id)}
+//                   style={{
+//                     display: 'flex',
+//                     alignItems: 'center',
+//                     padding: '12px 0',
+//                     cursor: 'pointer',
+//                     transition: 'background-color 0.2s',
+//                     borderRadius: '6px',
+//                     paddingLeft: '8px',
+//                     margin: '0 -8px'
+//                   }}
+//                   onMouseEnter={(e) => {
+//                     e.currentTarget.style.backgroundColor = '#f9fafb';
+//                   }}
+//                   onMouseLeave={(e) => {
+//                     e.currentTarget.style.backgroundColor = 'transparent';
+//                   }}
+//                 >
+//                   <div style={{ display: 'flex', alignItems: 'center', flex: 1, gap: '12px' }}>
+//                     {lesson.status === 'completed' && <CheckCircle size={20} style={{ color: '#10b981' }} />}
+//                     {lesson.status === 'current' && (
+//                       <div style={{
+//                         width: '20px',
+//                         height: '20px',
+//                         backgroundColor: '#ec4899',
+//                         borderRadius: '50%',
+//                         display: 'flex',
+//                         alignItems: 'center',
+//                         justifyContent: 'center'
+//                       }}>
+//                         <div style={{
+//                           width: '6px',
+//                           height: '6px',
+//                           backgroundColor: 'white',
+//                           borderRadius: '50%'
+//                         }} />
+//                       </div>
+//                     )}
+//                     {lesson.status === 'next' && <ChevronRight size={20} style={{ color: '#6b7280' }} />}
+//                     {lesson.status === 'locked' && <Lock size={16} style={{ color: '#d1d5db' }} />}
+//                     <div style={{ flex: 1 }}>
+//                       <span style={{ color: '#6b7280', fontSize: '12px', marginRight: '8px' }}>{lesson.id}.</span>
+//                       <span style={{ color: lesson.status === 'locked' ? '#d1d5db' : '#4b5563', fontSize: '14px', fontWeight: lesson.status === 'current' ? '600' : '400' }}>
+//                         {lesson.title}
+//                       </span>
+//                     </div>
+//                   </div>
+//                   <span style={{
+//                     backgroundColor: 
+//                       lesson.status === 'completed' ? '#d1fae5' :
+//                       lesson.status === 'current' ? '#fce7f3' : 
+//                       lesson.status === 'next' ? '#e0f2fe' : '#f3f4f6',
+//                     color: 
+//                       lesson.status === 'completed' ? '#10b981' :
+//                       lesson.status === 'current' ? '#ec4899' :
+//                       lesson.status === 'next' ? '#0284c7' : '#9ca3af',
+//                     padding: '4px 8px',
+//                     borderRadius: '12px',
+//                     fontSize: '10px',
+//                     fontWeight: '500',
+//                     textTransform: 'capitalize'
+//                   }}>
+//                     {lesson.status === 'completed' ? 'Completed' :
+//                      lesson.status === 'current' ? 'Current' :
+//                      lesson.status === 'next' ? 'Next' : 'Locked'}
+//                   </span>
+//                 </div>
+//               ))}
+//             </div>
+//             <div style={{
+//               backgroundColor: 'white',
+//               borderRadius: '12px',
+//               boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+//               padding: '20px',
+//               border: '1px solid #e5e7eb'
+//             }}>
+//               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+//                 <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+//                   <MessageCircle size={18} style={{ color: '#ec4899' }} />
+//                   AI Learning Assistant
+//                 </h3>
+//                 <button style={{ backgroundColor: '#f3f4f6', color: '#6b7280', border: 'none', padding: '6px 12px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer' }}>
+//                   Ask
+//                 </button>
+//               </div>
+//               <p style={{ color: '#6b7280', fontSize: '14px', margin: '0 0 12px 0' }}>
+//                 Need help? Ask about any step you're stuck on.
+//               </p>
+//               <div style={{ backgroundColor: '#fef3c7', border: '1px solid #f59e0b', borderRadius: '6px', padding: '12px', marginBottom: '12px' }}>
+//                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+//                   <span style={{ fontSize: '16px' }}>💡</span>
+//                   <span style={{ fontSize: '12px', fontWeight: '600', color: '#92400e' }}>Tip</span>
+//                 </div>
+//                 <p style={{ fontSize: '12px', color: '#92400e', margin: 0 }}>
+//                   Try a practice question on factoring after the video.
+//                 </p>
+//               </div>
+//               <textarea
+//                 placeholder="Type your question..."
+//                 style={{ width: '100%', height: '60px', border: '1px solid #d1d5db', borderRadius: '6px', padding: '8px', fontSize: '14px', resize: 'none', marginBottom: '12px' }}
+//               />
+//               <button style={{ width: '100%', backgroundColor: '#0f766e', color: 'white', border: 'none', padding: '10px', borderRadius: '6px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>
+//                 Send
+//               </button>
+//             </div>
+//           </div>
+//         </div>
+//         {/* Quiz Modal */}
+//         {showQuiz && (
+//           <div style={{
+//             position: 'fixed',
+//             top: 0,
+//             left: 0,
+//             right: 0,
+//             bottom: 0,
+//             backgroundColor: 'rgba(0, 0, 0, 0.5)',
+//             display: 'flex',
+//             alignItems: 'center',
+//             justifyContent: 'center',
+//             zIndex: 1000
+//           }}>
+//             <div style={{
+//               backgroundColor: 'white',
+//               borderRadius: '8px',
+//               padding: '24px',
+//               width: '90%',
+//               maxWidth: '600px',
+//               maxHeight: '90vh',
+//               overflow: 'auto',
+//               position: 'relative'
+//             }}>
+//               <button 
+//                 onClick={handleCloseQuiz}
+//                 style={{
+//                   position: 'absolute',
+//                   top: '16px',
+//                   right: '16px',
+//                   background: 'none',
+//                   border: 'none',
+//                   cursor: 'pointer'
+//                 }}
+//               >
+//                 <X size={20} color="#6b7280" />
+//               </button>
+//               {!quizCompleted ? (
+//                 <>
+//                   <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px' }}>
+//                     Question {currentQuestionIndex + 1} of {questions.length}
+//                   </h2>
+//                   <p style={{ fontSize: '18px', marginBottom: '24px', fontWeight: '500' }}>
+//                     {questions[currentQuestionIndex]?.question}
+//                   </p>
+//                   <div style={{ marginBottom: '24px' }}>
+//                     {questions[currentQuestionIndex]?.options.map((option, index) => (
+//                       <div 
+//                         key={index}
+//                         onClick={() => handleAnswerSelect(index)}
+//                         style={{
+//                           padding: '12px 16px',
+//                           border: `2px solid ${selectedAnswer === index ? '#0f766e' : '#e5e7eb'}`,
+//                           borderRadius: '8px',
+//                           marginBottom: '12px',
+//                           cursor: 'pointer',
+//                           backgroundColor: selectedAnswer === index ? '#f0fdfa' : 'white',
+//                           transition: 'all 0.2s'
+//                         }}
+//                       >
+//                         {option}
+//                       </div>
+//                     ))}
+//                   </div>
+//                   <button 
+//                     onClick={handleNextQuestion}
+//                     disabled={selectedAnswer === null}
+//                     style={{
+//                       width: '100%',
+//                       padding: '12px',
+//                       backgroundColor: selectedAnswer !== null ? '#0f766e' : '#9ca3af',
+//                       color: 'white',
+//                       border: 'none',
+//                       borderRadius: '6px',
+//                       fontSize: '16px',
+//                       fontWeight: '600',
+//                       cursor: selectedAnswer !== null ? 'pointer' : 'not-allowed'
+//                     }}
+//                   >
+//                     {currentQuestionIndex === questions.length - 1 ? 'Finish Quiz' : 'Next Question'}
+//                   </button>
+//                 </>
+//               ) : (
+//                 <>
+//                   <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px' }}>
+//                     Quiz Completed!
+//                   </h2>
+//                   <div style={{ 
+//                     textAlign: 'center', 
+//                     padding: '24px', 
+//                     backgroundColor: '#f0fdfa', 
+//                     borderRadius: '8px',
+//                     marginBottom: '24px'
+//                   }}>
+//                     <p style={{ fontSize: '18px', marginBottom: '8px' }}>
+//                       Your score: {quizScore} out of {questions.length}
+//                     </p>
+//                     <p style={{ fontSize: '16px', color: '#4b5563' }}>
+//                       {quizScore >= Math.ceil(questions.length * 0.8) 
+//                         ? 'Congratulations! You passed the quiz.' 
+//                         : 'Keep studying and try again.'}
+//                     </p>
+//                   </div>
+//                   <div style={{ display: 'flex', gap: '12px' }}>
+//                     <button 
+//                       onClick={handleCloseQuiz}
+//                       style={{
+//                         flex: 1,
+//                         padding: '12px',
+//                         backgroundColor: '#e5e7eb',
+//                         color: '#4b5563',
+//                         border: 'none',
+//                         borderRadius: '6px',
+//                         fontSize: '16px',
+//                         fontWeight: '600',
+//                         cursor: 'pointer'
+//                       }}
+//                     >
+//                       Close
+//                     </button>
+//                     {remainingChances > 0 && quizScore < Math.ceil(questions.length * 0.8) && (
+//                       <button 
+//                         onClick={handleRetryQuiz}
+//                         style={{
+//                           flex: 1,
+//                           padding: '12px',
+//                           backgroundColor: '#0f766e',
+//                           color: 'white',
+//                           border: 'none',
+//                           borderRadius: '6px',
+//                           fontSize: '16px',
+//                           fontWeight: '600',
+//                           cursor: 'pointer'
+//                         }}
+//                       >
+//                         Try Again ({remainingChances} left)
+//                       </button>
+//                     )}
+//                   </div>
+//                 </>
+//               )}
+//             </div>
+//           </div>
+//         )}
+//       </div>
+//       <style>
+//       {`
+//         .lesson-pdf-frame {
+//           width: 100% !important;
+//           min-height: 400px !important;
+//           max-height: 75vh !important;
+//           border: 1px solid #e5e7eb !important;
+//           border-radius: 8px !important;
+//           background: white !important;
+//         }
+//         @media (max-width: 768px) {
+//           .lesson-pdf-frame {
+//             height: 60vh !important;
+//             min-height: 250px !important;
+//             max-height: 75vh !important;
+//           }
+//         }
+//       `}
+//       </style>
+//     </>
+//   );
+// };
+
+// export default LessonPage;
+
+
+
+
+import React, { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { 
+  ArrowLeft, 
+  CheckCircle, 
+  FileText, 
+  MessageCircle, 
+  Clock, 
+  Lock, 
+  ChevronRight,
+  X,
+  AlertCircle,
+  Play
+} from 'lucide-react';
+
+const LessonPage = () => {
+  const { subject, chapterNumber } = useParams();
+  const navigate = useNavigate();
+  const [currentTime, setCurrentTime] = useState(0);
+  const videoRef = useRef(null);
+  const [isVideoCompleted, setIsVideoCompleted] = useState(false);
+  const [showPdf, setShowPdf] = useState(false);
+  const [showQuiz, setShowQuiz] = useState(false);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [quizScore, setQuizScore] = useState(0);
+  const [quizCompleted, setQuizCompleted] = useState(false);
+  const [remainingChances, setRemainingChances] = useState(3);
+  const [lastAttemptDate, setLastAttemptDate] = useState(null);
+  
+  // Centralized state for the checklist
+  const [checklistStatus, setChecklistStatus] = useState({
+    videoWatched: false,
+    practiceAttempted: false,
+    quizPassed: false
+  });
+
+  // Sample quiz questions for each subject and chapter
+  const quizQuestions = {
+    Maths: {
+      1: [
+        {
+          question: "What is the place value of 7 in the number 3,74,581?",
+          options: ["Thousands", "Ten Thousands", "Hundred Thousands", "Ones"],
+          correctAnswer: 1
+        },
+        {
+          question: "Which of these is the largest number?",
+          options: ["99,999", "1,00,000", "9,999", "99,99,999"],
+          correctAnswer: 3
+        },
+        {
+          question: "How do you write five lakh twenty thousand in numerals?",
+          options: ["5,20,000", "5,02,000", "5,00,200", "50,20,000"],
+          correctAnswer: 0
+        }
+      ],
+      2: [
+        {
+          question: "What is the result of 15 + 7 × 3?",
+          options: ["66", "36", "44", "56"],
+          correctAnswer: 1
+        },
+        {
+          question: "Which operation should be performed first in the expression: 8 + (12 ÷ 4) × 2?",
+          options: ["Addition", "Multiplication", "Division", "Subtraction"],
+          correctAnswer: 2
+        },
+        {
+          question: "What is the value of 20 - (5 × 2) + 3?",
+          options: ["13", "17", "23", "33"],
+          correctAnswer: 0
+        }
+      ],
+      3: [
+        {
+          question: "What is a point in geometry?",
+          options: ["A location with no size", "A straight path", "A flat surface", "A line with two endpoints"],
+          correctAnswer: 0
+        },
+        {
+          question: "What is a ray?",
+          options: ["A line with two endpoints", "A part of a line with one endpoint", "A curved path", "A flat surface"],
+          correctAnswer: 1
+        },
+        {
+          question: "How many dimensions does a point have?",
+          options: ["Zero", "One", "Two", "Three"],
+          correctAnswer: 0
+        }
+      ],
+      4: [
+        {
+          question: "What is the value of x in the expression 2x + 5 = 15?",
+          options: ["5", "10", "7.5", "5.5"],
+          correctAnswer: 0
+        },
+        {
+          question: "Solve for y: 3y - 2 = 10.",
+          options: ["2", "3", "4", "5"],
+          correctAnswer: 2
+        },
+        {
+          question: "If a + 7 = 13, what is the value of a?",
+          options: ["4", "5", "6", "7"],
+          correctAnswer: 2
+        }
+      ],
+      5: [
+        {
+          question: "How many endpoints does a line have?",
+          options: ["0", "1", "2", "Infinite"],
+          correctAnswer: 0
+        },
+        {
+          question: "A line segment is part of a:",
+          options: ["Ray", "Point", "Line", "Plane"],
+          correctAnswer: 2
+        },
+        {
+          question: "Which of these extends infinitely in only one direction?",
+          options: ["Line", "Ray", "Line Segment", "Point"],
+          correctAnswer: 1
+        }
+      ]
+    },
+    Science: {
+      1: [
+        {
+          question: "Which century is known as the 'Age of Science'?",
+          options: ["18th Century", "19th Century", "20th Century", "21st Century"],
+          correctAnswer: 2
+        },
+        {
+          question: "Who is known as the father of modern science?",
+          options: ["Albert Einstein", "Galileo Galilei", "Isaac Newton", "Marie Curie"],
+          correctAnswer: 1
+        },
+        {
+          question: "Which invention revolutionized communication in the 20th century?",
+          options: ["Telephone", "Internet", "Printing Press", "Television"],
+          correctAnswer: 1
+        }
+      ],
+      2: [
+        {
+          question: "Which of these is a chemical property?",
+          options: ["Color", "Flammability", "Density", "Hardness"],
+          correctAnswer: 1
+        },
+        {
+          question: "What is the state of matter where particles are tightly packed and vibrate in fixed positions?",
+          options: ["Liquid", "Gas", "Solid", "Plasma"],
+          correctAnswer: 2
+        },
+        {
+          question: "The process by which a solid changes directly into a gas is called:",
+          options: ["Melting", "Evaporation", "Sublimation", "Condensation"],
+          correctAnswer: 2
+        }
+      ],
+      3: [
+        {
+          question: "What is the unit of electric current?",
+          options: ["Volt", "Ampere", "Ohm", "Watt"],
+          correctAnswer: 1
+        },
+        {
+          question: "Which component is used to break or make an electric circuit?",
+          options: ["Battery", "Wire", "Switch", "Bulb"],
+          correctAnswer: 2
+        },
+        {
+          question: "What is the flow of electric charge called?",
+          options: ["Voltage", "Resistance", "Current", "Power"],
+          correctAnswer: 2
+        }
+      ],
+      4: [
+        {
+          question: "Which metal is liquid at room temperature?",
+          options: ["Iron", "Mercury", "Gold", "Copper"],
+          correctAnswer: 1
+        },
+        {
+          question: "Which of these is a good conductor of electricity?",
+          options: ["Wood", "Plastic", "Copper", "Rubber"],
+          correctAnswer: 2
+        },
+        {
+          question: "What property makes metals suitable for making bells?",
+          options: ["Ductility", "Malleability", "Sonorousness", "Lustre"],
+          correctAnswer: 2
+        }
+      ],
+      5: [
+        {
+          question: "Which of these is a chemical change?",
+          options: ["Melting ice", "Dissolving sugar", "Burning wood", "Breaking glass"],
+          correctAnswer: 2
+        },
+        {
+          question: "In a physical change, what changes?",
+          options: ["Chemical composition", "State or appearance", "Both chemical composition and state", "Nothing"],
+          correctAnswer: 1
+        },
+        {
+          question: "Rusting of iron is an example of a:",
+          options: ["Physical change", "Chemical change", "Reversible change", "No change"],
+          correctAnswer: 1
+        }
+      ]
+    },
+    Social: {
+      1: [
+        {
+          question: "What period does 'A Thousand Years' refer to in Indian history?",
+          options: ["700-1700 CE", "500-1500 CE", "1000-2000 CE", "800-1800 CE"],
+          correctAnswer: 0
+        },
+        {
+          question: "Which language was predominantly used for administrative purposes during the Delhi Sultanate?",
+          options: ["Sanskrit", "Persian", "Arabic", "Urdu"],
+          correctAnswer: 1
+        },
+        {
+          question: "What was the main source of information about the past for historians?",
+          options: ["Coins", "Inscriptions", "Manuscripts", "All of the above"],
+          correctAnswer: 3
+        }
+      ],
+      2: [
+        {
+          question: "Which was the first major kingdom in South India?",
+          options: ["Chola", "Pandya", "Chera", "Satavahana"],
+          correctAnswer: 3
+        },
+        {
+          question: "Who was a prominent ruler of the Chola dynasty?",
+          options: ["Rajendra Chola I", "Ashoka", "Harsha", "Chandragupta Maurya"],
+          correctAnswer: 0
+        },
+        {
+          question: "The Rashtrakutas were known for their contributions to:",
+          options: ["Art and Architecture", "Trade Routes", "Military Strategy", "Farming Techniques"],
+          correctAnswer: 0
+        }
+      ],
+      3: [
+        {
+          question: "Who was the first Sultan of Delhi?",
+          options: ["Iltutmish", "Qutb-ud-din Aibak", "Balban", "Alauddin Khilji"],
+          correctAnswer: 1
+        },
+        {
+          question: "Which monument was built by Qutb-ud-din Aibak?",
+          options: ["Red Fort", "Qutb Minar", "Humayun's Tomb", "Agra Fort"],
+          correctAnswer: 1
+        },
+        {
+          question: "Raziya Sultan was the daughter of which Sultan?",
+          options: ["Ghiyas ud din Balban", "Iltutmish", "Nasir ud din Mahmud", "Alauddin Khalji"],
+          correctAnswer: 1
+        }
+      ],
+      4: [
+        {
+          question: "Who was the first Mughal emperor?",
+          options: ["Akbar", "Babur", "Humayun", "Jahangir"],
+          correctAnswer: 1
+        },
+        {
+          question: "The Battle of Panipat (1526) was fought between Babur and:",
+          options: ["Sher Shah Suri", "Ibrahim Lodi", "Hem Chandra Vikramaditya", "Rana Sanga"],
+          correctAnswer: 1
+        },
+        {
+          question: "Akbar's revenue minister was:",
+          options: ["Birbal", "Faizi", "Raja Todar Mal", "Tansen"],
+          correctAnswer: 2
+        }
+      ],
+      5: [
+        {
+          question: "Which ruler built the Taj Mahal?",
+          options: ["Akbar", "Shah Jahan", "Aurangzeb", "Jahangir"],
+          correctAnswer: 1
+        },
+        {
+          question: "The Red Fort in Delhi was built by:",
+          options: ["Humayun", "Akbar", "Shah Jahan", "Aurangzeb"],
+          correctAnswer: 2
+        },
+        {
+          question: "The Qutb Minar was started by Qutb-ud-din Aibak and completed by:",
+          options: ["Firoz Shah Tughlaq", "Iltutmish", "Alauddin Khalji", "Ghiyas ud din Balban"],
+          correctAnswer: 1
+        }
+      ]
+    },
+    English: {
+      1: [
+        {
+          question: "Which of the following is a common noun?",
+          options: ["Table", "London", "John", "Amazon"],
+          correctAnswer: 0
+        },
+        {
+          question: "Identify the verb in the sentence: 'She sings beautifully.'",
+          options: ["She", "sings", "beautifully", "the"],
+          correctAnswer: 1
+        },
+        {
+          question: "A proper noun always begins with a:",
+          options: ["Lowercase letter", "Uppercase letter", "Vowel", "Consonant"],
+          correctAnswer: 1
+        }
+      ],
+      2: [
+        {
+          question: "What is a synonym for 'happy'?",
+          options: ["Sad", "Joyful", "Angry", "Tired"],
+          correctAnswer: 1
+        },
+        {
+          question: "Which of these is an antonym for 'fast'?",
+          options: ["Quick", "Rapid", "Slow", "Speedy"],
+          correctAnswer: 2
+        },
+        {
+          question: "The word 'tiny' is a synonym for:",
+          options: ["Large", "Huge", "Small", "Giant"],
+          correctAnswer: 2
+        }
+      ],
+      3: [
+        {
+          question: "Which of the following is a preposition?",
+          options: ["Run", "Quickly", "Under", "And"],
+          correctAnswer: 2
+        },
+        {
+          question: "In the sentence 'The cat sat on the mat,' what is the adjective?",
+          options: ["Cat", "Sat", "On", "None of the above"],
+          correctAnswer: 3
+        },
+        {
+          question: "An adverb usually describes a:",
+          options: ["Noun", "Verb", "Pronoun", "Preposition"],
+          correctAnswer: 1
+        }
+      ],
+      4: [
+        {
+          question: "What is the past tense of the verb 'go'?",
+          options: ["Goes", "Gone", "Went", "Going"],
+          correctAnswer: 2
+        },
+        {
+          question: "Which of these is a collective noun?",
+          options: ["Book", "Tree", "Flock", "Car"],
+          correctAnswer: 2
+        },
+        {
+          question: "A sentence that expresses a strong emotion is called an:",
+          options: ["Interrogative sentence", "Imperative sentence", "Exclamatory sentence", "Declarative sentence"],
+          correctAnswer: 2
+        }
+      ],
+      5: [
+        {
+          question: "What punctuation mark is used at the end of a question?",
+          options: ["Period", "Comma", "Question mark", "Exclamation mark"],
+          correctAnswer: 2
+        },
+        {
+          question: "Which of these is a conjunction?",
+          options: ["Jump", "But", "Loudly", "Beautiful"],
+          correctAnswer: 1
+        },
+        {
+          question: "The subject of a sentence is usually a:",
+          options: ["Verb or Adverb", "Noun or Pronoun", "Adjective or Preposition", "Conjunction or Interjection"],
+          correctAnswer: 1
+        }
+      ]
+    },
+    Computer: {
+      1: [
+        {
+          question: "What does CPU stand for?",
+          options: ["Central Process Unit", "Central Processing Unit", "Computer Personal Unit", "Central Power Unit"],
+          correctAnswer: 1
+        },
+        {
+          question: "Which of these is an input device?",
+          options: ["Monitor", "Printer", "Keyboard", "Speaker"],
+          correctAnswer: 2
+        },
+        {
+          question: "The brain of the computer is the:",
+          options: ["Monitor", "Keyboard", "Mouse", "CPU"],
+          correctAnswer: 3
+        }
+      ],
+      2: [
+        {
+          question: "What is RAM primarily used for in a computer?",
+          options: ["Long-term storage", "Temporary data storage", "Printing documents", "Displaying images"],
+          correctAnswer: 1
+        },
+        {
+          question: "Which operating system is developed by Microsoft?",
+          options: ["macOS", "Linux", "Windows", "Android"],
+          correctAnswer: 2
+        },
+        {
+          question: "An operating system is a type of:",
+          options: ["Hardware", "Application Software", "System Software", "Utility Software"],
+          correctAnswer: 2
+        }
+      ],
+      3: [
+        {
+          question: "What is the full form of WWW?",
+          options: ["World Wide Web", "World Web Windows", "Web World Wide", "Wide World Web"],
+          correctAnswer: 0
+        },
+        {
+          question: "Which protocol is used to send emails?",
+          options: ["HTTP", "FTP", "SMTP", "TCP/IP"],
+          correctAnswer: 2
+        },
+        {
+          question: "A collection of interconnected networks is known as the:",
+          options: ["Intranet", "Extranet", "Internet", "LAN"],
+          correctAnswer: 2
+        }
+      ],
+      4: [
+        {
+          question: "Which software is used for creating documents, spreadsheets, and presentations?",
+          options: ["Antivirus", "Operating System", "Office Suite", "Web Browser"],
+          correctAnswer: 2
+        },
+        {
+          question: "What is a 'bug' in computer programming?",
+          options: ["A computer virus", "An error in the code", "A type of software", "A hardware component"],
+          correctAnswer: 1
+        },
+        {
+          question: "Compilers and interpreters are examples of:",
+          options: ["Application software", "System software", "Utility programs", "Hardware"],
+          correctAnswer: 1
+        }
+      ],
+      5: [
+        {
+          question: "What does 'HTTP' stand for?",
+          options: ["HyperText Transfer Protocol", "Hyper Transfer Text Protocol", "High Technology Transfer Program", "Home Text Transfer Protocol"],
+          correctAnswer: 0
+        },
+        {
+          question: "Which device is used to connect multiple computers in a local area network (LAN)?",
+          options: ["Modem", "Router", "Switch", "Server"],
+          correctAnswer: 2
+        },
+        {
+          question: "What is cybersecurity primarily concerned with?",
+          options: ["Making computers faster", "Protecting computer systems from theft and damage", "Designing new computer hardware", "Creating software applications"],
+          correctAnswer: 1
+        }
+      ]
+    }
+  };
+
+  // Generate unique key for each chapter's quiz chances
+  const getChapterKey = () => `quiz_chances_${subject}_${chapterNumber}`;
+  const getChapterDateKey = () => `quiz_date_${subject}_${chapterNumber}`;
+
+  useEffect(() => {
+    const today = new Date().toDateString();
+    const chapterKey = getChapterKey();
+    const chapterDateKey = getChapterDateKey();
+    
+    const storedDate = localStorage.getItem(chapterDateKey);
+    const storedChances = localStorage.getItem(chapterKey);
+    
+    if (storedDate === today) {
+      // Same day, use stored chances for this chapter
+      setRemainingChances(parseInt(storedChances) || 3);
+    } else {
+      // New day, reset chances for this chapter
+      setRemainingChances(3);
+      localStorage.setItem(chapterKey, '3');
+      localStorage.setItem(chapterDateKey, today);
+    }
+  }, [subject, chapterNumber]);
+
+  // Update checklist when video is completed
+  useEffect(() => {
+    if (isVideoCompleted) {
+      setChecklistStatus(prev => ({
+        ...prev,
+        videoWatched: true
+      }));
+    }
+  }, [isVideoCompleted]);
+
+  const videos = {
+    Maths: {
+      1: { title: "Large Numbers", file: "/videos/Maths/chapter-1.mp4", pdf: "/pdfs/maths/maths ch-1.pdf", about: "Learn about large numbers, their place values, and representation." },
+      2: { title: "Arithmetic Expressions", file: "/videos/Maths/chapter-2.mp4", pdf: "/pdfs/maths/maths ch-2.pdf", about: "Understand arithmetic expressions and step-by-step solving." },
+      3: { title: "Peek Point", file: "/videos/Maths/chapter-3.mp4", pdf: "/pdfs/maths/maths ch-3.pdf", about: "Explore fundamental geometry concepts like points, lines, and rays." },
+      4: { title: "Number Expressions", file: "/videos/Maths/chapter-4.mp4", pdf: "/pdfs/maths/maths ch-4.pdf", about: "Dive into solving simple algebraic equations with one variable." },
+      5: { title: "Lines and Angles", file: "/videos/Maths/chapter-5.mp4", pdf: "/pdfs/maths/maths ch-5.pdf", about: "Introduction to lines, line segments, rays, and basic angles." },
+    },
+    Science: {
+      1: { title: "Age of Science", file: "/videos/science/chapter-1.mp4", pdf: "/pdfs/science/7-Science-chpt-1.pdf", about: "Discover the role of science in human progress and historical context." },
+      2: { title: "Substances", file: "/videos/science/chapter-2.mp4", pdf: "/pdfs/science/7-Science-chpt-2.pdf", about: "Learn about different states of matter and their properties." },
+      3: { title: "Electricity Basics", file: "/videos/science/chapter-3.mp4", pdf: "/pdfs/science/7-Science-chpt-3.pdf", about: "Basics of electricity, current, circuits, and components." },
+      4: { title: "Metals & Non-metals", file: "/videos/science/chapter-4.mp4", pdf: "/pdfs/science/7-Science-chpt-4.pdf", about: "Study the properties, uses, and differences between metals and non-metals." },
+      5: { title: "Physical & Chemical Changes", file: "/videos/science/chapter-5.mp4", pdf: "/pdfs/science/7-Science-chpt-5.pdf", about: "Differentiate physical changes from chemical changes with examples." },
+    },
+    Social: {
+      1: { title: "Tracing Changes", file: "/videos/social/chapter1 (online-video-cutter.com).mp4", pdf: "/pdfs/social/History (1)Tracing Changes Through A Thousand Years.pdf", about: "Explore historical changes and sources over a thousand years in India." },
+      2: { title: "New Kings & Kingdoms", file: "/videos/social/chpter2social.mp4", pdf: "/pdfs/social/History (2)New Kings And Kingdoms.pdf", about: "Learn about the rise of various kingdoms in medieval India." },
+      3: { title: "The Delhi Sultans", file: "/videos/social/social_ch3.mp4.mp4", pdf: "/pdfs/social/History (3)The Delhi Sultans.pdf", about: "Know about the Delhi Sultans, their administration, and monuments." },
+      4: { title: "The Mughal Empire", file: "/videos/social/social_ch4.mp4.mp4", pdf: "/pdfs/social/History (4)The Mughal Empire.pdf", about: "A detailed look into the Mughal Empire, its rulers, and policies." },
+      5: { title: "Rulers and Buildings", file: "/videos/social/social_ch5.mp4.mp4", pdf: "/pdfs/social/History (5)Rulers and Buildings.pdf", about: "Study the architectural marvels and ruling strategies of various historical rulers." },
+    },
+    English: {
+      1: { title: "Learning Together", file: "/videos/english/7th english unit -1 LEARNING TOGETHER (2).mp4", pdf: "/pdfs/english/7th english  unit -1 LEARNING TOGETHER.pdf", about: "Understand the basics of nouns, pronouns, and their usage in sentences." },
+      2: { title: "Wit And Humour", file: "/videos/english/7th english unit -1 LEARNING TOGETHER.mp4", pdf: "/pdfs/english/7th english unit -2 WIT AND HUMOUR.pdf", about: "Explore verbs, different tenses, and how they change meaning." },
+      3: { title: "Dreams And Discoveries", file: "/videos/english/english_3.mp4", pdf: "/pdfs/english/7th english unit -3 DREAMS & DISCOVERS.pdf", about: "Learn to identify and use adjectives and adverbs to describe words effectively." },
+      4: { title: "Travel And Adventure", file: "/videos/english/english_4.mp4", pdf: "/pdfs/english/7th english unit -4 TRAVEL & ADVENTURE.pdf", about: "Understand the role of prepositions in showing relationships and conjunctions in joining sentences." },
+      5: { title: "Brave Hearts", file: "/videos/english/english_5.mp4", pdf: "/pdfs/english/7th english unit -5 BRAVEHEARTS.pdf", about: "Master different sentence structures and the correct use of punctuation marks." },
+    },
+    Computer: {
+      1: { title: "Microsoft word", file: "/videos/Computer/chapter-1.mp4", pdf: "/pdfs/computer/computer-ch1.pdf", about: "Microsoft Word is a word-processing software used to create, edit, format, and share text documents." },
+      2: { title: "Text Editing", file: "/videos/Computer/chapter-2.mp4", pdf: "/pdfs/computer/computer-ch2.pdf", about: "Text editing is the process of creating, modifying, and formatting written content using a text editor or word processor." },
+      3: { title: "MS Word Pictures", file: "/videos/Computer/chapter-3.mp4", pdf: "/pdfs/computer/computer-ch3.pdf", about: "Microsoft Word, pictures can be inserted and formatted to enhance the appearance and meaning of a document." },
+      4: { title: "MS Word Smart Art", file: "/videos/Computer/chapter-4.mp4", pdf: "/pdfs/computer/computer-ch4.pdf", about: "SmartArt in Microsoft Word is a feature that lets you create diagrams and visuals to represent information effectively." },
+      5: { title: "Smart Art Editing", file: "/videos/Computer/chapter-5.mp4", pdf: "/pdfs/computer/computer-ch5.pdf", about: "SmartArt editing in Microsoft Word allows you to modify shapes, colors, layouts, and text within a diagram to better present information." },
+    }
+    
+  };
+
+  const currentLesson = videos[subject]?.[chapterNumber] || {
+    title: "Lesson Not Found",
+    file: "",
+    about: ""
+  };
+
+  const questions = quizQuestions[subject]?.[chapterNumber] || [];
+
+  const lessons = Object.keys(videos[subject] || {}).map((id) => ({
+    id,
+    title: videos[subject][id].title,
+    status: parseInt(id) < parseInt(chapterNumber) ? "completed" 
+           : parseInt(id) === parseInt(chapterNumber) ? "current" : "next"
+  }));
+
+  const checklistItems = [
+    { id: 1, task: `Watch full video of ${currentLesson.title}`, status: checklistStatus.videoWatched ? "completed" : "in-progress" },
+    { id: 2, task: "Attempt practice quiz", status: checklistStatus.practiceAttempted ? "completed" : "pending" },
+  ];
+
+  const practiceQuestions = [
+    { id: 1, question: `Practice questions for ${currentLesson.title}` },
+  ];
+
+  const handleSeek = (time) => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = time;
+      videoRef.current.play();
+    }
+  };
+
+  const handleGoBack = () => {
+    navigate('/learn');
+  };
+
+  const handleChapterClick = (chapterId) => {
+    navigate(`/lesson/${subject}/${chapterId}`);
+  };
+
+  const handleVideoEnd = () => {
+    setIsVideoCompleted(true);
+  };
+
+  const handleStartQuiz = () => {
+    if (remainingChances > 0) {
+      setShowQuiz(true);
+      setCurrentQuestionIndex(0);
+      setSelectedAnswer(null);
+      setQuizScore(0);
+      setQuizCompleted(false);
+    }
+  };
+
+  const handleAnswerSelect = (index) => {
+    setSelectedAnswer(index);
+  };
+
+  const handleNextQuestion = () => {
+    if (selectedAnswer === questions[currentQuestionIndex].correctAnswer) {
+      setQuizScore(prevScore => prevScore + 1);
+    }
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setSelectedAnswer(null);
+    } else {
+      setQuizCompleted(true);
+      const newChances = remainingChances - 1;
+      setRemainingChances(newChances);
+      
+      // Update localStorage with chapter-specific key
+      const chapterKey = getChapterKey();
+      localStorage.setItem(chapterKey, newChances.toString());
+      
+      const finalScore = quizScore + (selectedAnswer === questions[currentQuestionIndex].correctAnswer ? 1 : 0);
+      const isPassed = finalScore >= Math.ceil(questions.length * 0.8);
+      setChecklistStatus(prev => ({
+        ...prev,
+        practiceAttempted: true,
+        quizPassed: isPassed
+      }));
+    }
+  };
+
+  const handleCloseQuiz = () => {
+    setShowQuiz(false);
+  };
+
+  const handleRetryQuiz = () => {
+    if (remainingChances > 0) {
+      setCurrentQuestionIndex(0);
+      setSelectedAnswer(null);
+      setQuizScore(0);
+      setQuizCompleted(false);
+    }
+  };
+
+  return (
+    <>
+      {/* Responsive styles */}
+      <style>
+      {`
+        .lesson-content {
+          display: flex;
+          gap: 24px;
+          padding: 24px;
+        }
+        .lesson-left {
+          flex: 2;
+          min-width: 0;
+        }
+        .lesson-right {
+          width: 320px;
+          min-width: 320px;
+        }
+        @media (max-width: 768px) {
+          .lesson-content {
+            flex-direction: column;
+            gap: 0;
+            padding: 12px;
+          }
+          .lesson-left,
+          .lesson-right {
+            width: 100%;
+            min-width: 0;
+          }
+          .lesson-right {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            width: 100%;
+            min-width: 0;
+            margin-top: 20px;
+          }
+          .lesson-right > div {
+            width: 100%;
+          }
+        }
+        /* Hide download button from video controls */
+        video::-webkit-media-controls-download-button {
+          display: none;
+        }
+        video::-webkit-media-controls-enclosure {
+          overflow: hidden;
+        }
+        video::-moz-media-controls-panel {
+          display: flex;
+        }
+        video::-moz-media-controls-download-button {
+          display: none;
+        }
+        /* Additional CSS to ensure download option is hidden */
+        video {
+          controlsList: "nodownload";
+        }
+      `}
+      </style>
+      <div style={{ fontFamily: 'Arial, sans-serif', backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+        {/* Header */}
+        <div style={{ backgroundColor: 'white', padding: '100px 32px', borderBottom: '1px solid #e5e7eb',
+                      display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <ArrowLeft size={20} style={{ cursor: 'pointer', color: '#6b7280' }} onClick={handleGoBack} />
+          <h1 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
+            {subject} • {currentLesson.title}
+          </h1>
+        </div>
+        <div className="lesson-content">
+          {/* Left section: video, about, PDF, checklist, practice */}
+          <div className="lesson-left">
+            <div style={{ marginBottom: '24px' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937' }}>
+                Video: {currentLesson.title}
+              </h2>
+              <video
+                ref={videoRef}
+                src={currentLesson.file}
+                controls
+                controlsList="nodownload"
+                width="100%"
+                style={{ borderRadius: "8px", backgroundColor: "#000", marginTop: "12px" }}
+                onTimeUpdate={(e) => setCurrentTime(e.target.currentTime)}
+                onEnded={handleVideoEnd}
+              />
+            </div>
+            <div style={{ backgroundColor: "white", padding: "16px", borderRadius: "8px", marginBottom: "20px", border: "1px solid #e5e7eb" }}>
+              <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "10px", color: "#1f2937" }}>📘 About</h3>
+              <p style={{ fontSize: "14px", color: "#4b5563", lineHeight: "1.6" }}>
+                {currentLesson.about || "No description available."}
+              </p>
+            </div>
+            {currentLesson.pdf && (
+              <div style={{ marginTop: "20px" }}>
+                {!showPdf && (
+                  <button
+                    onClick={() => setShowPdf(true)}
+                    style={{
+                      backgroundColor: "#0f766e",
+                      color: "white",
+                      padding: "10px 16px",
+                      border: "none",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                    }}
+                  >
+                    📖 View Lesson PDF
+                  </button>
+                )}
+                {showPdf && (
+                  <div>
+                    <iframe
+                      id="lessonPdfFrame"
+                      src={`${currentLesson.pdf}#view=FitH&scrollbar=1&toolbar=0`}
+                      title="Lesson PDF"
+                      style={{
+                        width: "100%",
+                        height: "500px",
+                        border: "1px solid #e5e7eb",
+                        borderRadius: "8px",
+                        overflow: "auto",
+                      }}
+                    />
+                    <div style={{ marginTop: "12px", display: "flex", gap: "10px" }}>
+                      <a
+                        href={currentLesson.pdf}
+                        download
+                        style={{
+                          backgroundColor: "#0f766e",
+                          color: "white",
+                          textDecoration: "none",
+                          padding: "10px 16px",
+                          borderRadius: "6px",
+                          fontSize: "14px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        📥 Download Lesson PDF
+                      </a>
+                      <button
+                        onClick={() => setShowPdf(false)}
+                        style={{
+                          backgroundColor: "#dc2626",
+                          color: "white",
+                          padding: "10px 16px",
+                          border: "none",
+                          borderRadius: "6px",
+                          cursor: "pointer",
+                          fontSize: "14px",
+                        }}
+                      >
+                        ❌ Close PDF
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: '24px', marginTop: "24px", flexWrap: 'wrap' }}>
+              <div style={{
+                flex: 1,
+                backgroundColor: 'white',
+                borderRadius: '12px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+                padding: '20px',
+                border: '1px solid #e5e7eb',
+                marginBottom: '20px'
+              }}>
+                <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <FileText size={20}/> Lesson Checklist
+                </h3>
+                {checklistItems.map((item) => (
+                  <div key={item.id} style={{ padding: '12px 0', borderBottom: '1px solid #f3f4f6', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '14px', color: '#4b5563' }}>{item.task}</span>
+                    <span style={{ 
+                      fontSize: '12px', 
+                      padding: '4px 8px', 
+                      borderRadius: '12px',
+                      background: item.status === "completed" ? "#10b981" : 
+                                 item.status === "in-progress" ? "#ec4899" : "#e5e7eb",
+                      color: item.status === "completed" || item.status === "in-progress" ? "white" : "#6b7280" 
+                    }}>
+                      {item.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div style={{
+                flex: 1,
+                backgroundColor: 'white',
+                borderRadius: '12px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+                padding: '20px',
+                border: '1px solid #e5e7eb',
+                marginBottom: '20px'
+              }}>
+                <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', marginBottom: '16px' }}>
+                  Quick Practice
+                </h3>
+                <div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <AlertCircle size={16} color="#f59e0b" />
+                  <span style={{ fontSize: '14px', color: '#f59e0b' }}>
+                    {remainingChances} {remainingChances === 1 ? 'chance' : 'chances'} remaining for this chapter
+                  </span>
+                </div>
+                {practiceQuestions.map((q) => (
+                  <div key={q.id} style={{ padding: '12px 0', borderBottom: '1px solid #f3f4f6', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '14px', color: '#4b5563' }}>{q.question}</span>
+                    <button 
+                      onClick={handleStartQuiz}
+                      disabled={remainingChances <= 0}
+                      style={{ 
+                        backgroundColor: remainingChances > 0 ? "#0f766e" : "#9ca3af", 
+                        color: "white", 
+                        border: "none", 
+                        borderRadius: "4px", 
+                        padding: "6px 12px",
+                        cursor: remainingChances > 0 ? "pointer" : "not-allowed",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "4px"
+                      }}
+                    >
+                      <Play size={14} />
+                      {remainingChances > 0 ? "Start" : "No chances"}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          {/* Right section: lesson outline and AI assistant (now appears below video on mobile) */}
+          <div className="lesson-right">
+            <div style={{ 
+              backgroundColor: 'white',
+              borderRadius: '12px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+              padding: '20px',
+              marginBottom: '20px',
+              border: '1px solid #e5e7eb'
+            }}>
+              <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#1f2937', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <FileText size={20} />
+                Lesson Outline
+              </h3>
+              {lessons.map((lesson) => (
+                <div 
+                  key={lesson.id} 
+                  onClick={() => handleChapterClick(lesson.id)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '12px 0',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s',
+                    borderRadius: '6px',
+                    paddingLeft: '8px',
+                    margin: '0 -8px'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#f9fafb';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', flex: 1, gap: '12px' }}>
+                    {lesson.status === 'completed' && <CheckCircle size={20} style={{ color: '#10b981' }} />}
+                    {lesson.status === 'current' && (
+                      <div style={{
+                        width: '20px',
+                        height: '20px',
+                        backgroundColor: '#ec4899',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        <div style={{
+                          width: '6px',
+                          height: '6px',
+                          backgroundColor: 'white',
+                          borderRadius: '50%'
+                        }} />
+                      </div>
+                    )}
+                    {lesson.status === 'next' && <ChevronRight size={20} style={{ color: '#6b7280' }} />}
+                    {lesson.status === 'locked' && <Lock size={16} style={{ color: '#d1d5db' }} />}
+                    <div style={{ flex: 1 }}>
+                      <span style={{ color: '#6b7280', fontSize: '12px', marginRight: '8px' }}>{lesson.id}.</span>
+                      <span style={{ color: lesson.status === 'locked' ? '#d1d5db' : '#4b5563', fontSize: '14px', fontWeight: lesson.status === 'current' ? '600' : '400' }}>
+                        {lesson.title}
+                      </span>
+                    </div>
+                  </div>
+                  <span style={{
+                    backgroundColor: 
+                      lesson.status === 'completed' ? '#d1fae5' :
+                      lesson.status === 'current' ? '#fce7f3' : 
+                      lesson.status === 'next' ? '#e0f2fe' : '#f3f4f6',
+                    color: 
+                      lesson.status === 'completed' ? '#10b981' :
+                      lesson.status === 'current' ? '#ec4899' :
+                      lesson.status === 'next' ? '#0284c7' : '#9ca3af',
+                    padding: '4px 8px',
+                    borderRadius: '12px',
+                    fontSize: '10px',
+                    fontWeight: '500',
+                    textTransform: 'capitalize'
+                  }}>
+                    {lesson.status === 'completed' ? 'Completed' :
+                     lesson.status === 'current' ? 'Current' :
+                     lesson.status === 'next' ? 'Next' : 'Locked'}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div style={{
+              backgroundColor: 'white',
+              borderRadius: '12px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+              padding: '20px',
+              border: '1px solid #e5e7eb'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <MessageCircle size={18} style={{ color: '#ec4899' }} />
+                  AI Learning Assistant
+                </h3>
+                <button style={{ backgroundColor: '#f3f4f6', color: '#6b7280', border: 'none', padding: '6px 12px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer' }}>
+                  Ask
+                </button>
+              </div>
+              <p style={{ color: '#6b7280', fontSize: '14px', margin: '0 0 12px 0' }}>
+                Need help? Ask about any step you're stuck on.
+              </p>
+              <div style={{ backgroundColor: '#fef3c7', border: '1px solid #f59e0b', borderRadius: '6px', padding: '12px', marginBottom: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                  <span style={{ fontSize: '16px' }}>💡</span>
+                  <span style={{ fontSize: '12px', fontWeight: '600', color: '#92400e' }}>Tip</span>
+                </div>
+                <p style={{ fontSize: '12px', color: '#92400e', margin: 0 }}>
+                  Try a practice question on factoring after the video.
+                </p>
+              </div>
+              <textarea
+                placeholder="Type your question..."
+                style={{ width: '100%', height: '60px', border: '1px solid #d1d5db', borderRadius: '6px', padding: '8px', fontSize: '14px', resize: 'none', marginBottom: '12px' }}
+              />
+              <button style={{ width: '100%', backgroundColor: '#0f766e', color: 'white', border: 'none', padding: '10px', borderRadius: '6px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>
+                Send
+              </button>
+            </div>
+          </div>
+        </div>
+        {/* Quiz Modal */}
+        {showQuiz && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000
+          }}>
+            <div style={{
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              padding: '24px',
+              width: '90%',
+              maxWidth: '600px',
+              maxHeight: '90vh',
+              overflow: 'auto',
+              position: 'relative'
+            }}>
+              <button 
+                onClick={handleCloseQuiz}
+                style={{
+                  position: 'absolute',
+                  top: '16px',
+                  right: '16px',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                <X size={20} color="#6b7280" />
+              </button>
+              {!quizCompleted ? (
+                <>
+                  <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px' }}>
+                    Question {currentQuestionIndex + 1} of {questions.length}
+                  </h2>
+                  <p style={{ fontSize: '18px', marginBottom: '24px', fontWeight: '500' }}>
+                    {questions[currentQuestionIndex]?.question}
+                  </p>
+                  <div style={{ marginBottom: '24px' }}>
+                    {questions[currentQuestionIndex]?.options.map((option, index) => (
+                      <div 
+                        key={index}
+                        onClick={() => handleAnswerSelect(index)}
+                        style={{
+                          padding: '12px 16px',
+                          border: `2px solid ${selectedAnswer === index ? '#0f766e' : '#e5e7eb'}`,
+                          borderRadius: '8px',
+                          marginBottom: '12px',
+                          cursor: 'pointer',
+                          backgroundColor: selectedAnswer === index ? '#f0fdfa' : 'white',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        {option}
+                      </div>
+                    ))}
+                  </div>
+                  <button 
+                    onClick={handleNextQuestion}
+                    disabled={selectedAnswer === null}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      backgroundColor: selectedAnswer !== null ? '#0f766e' : '#9ca3af',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      fontSize: '16px',
+                      fontWeight: '600',
+                      cursor: selectedAnswer !== null ? 'pointer' : 'not-allowed'
+                    }}
+                  >
+                    {currentQuestionIndex === questions.length - 1 ? 'Finish Quiz' : 'Next Question'}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px' }}>
+                    Quiz Completed!
+                  </h2>
+                  <div style={{ 
+                    textAlign: 'center', 
+                    padding: '24px', 
+                    backgroundColor: '#f0fdfa', 
+                    borderRadius: '8px',
+                    marginBottom: '24px'
+                  }}>
+                    <p style={{ fontSize: '18px', marginBottom: '8px' }}>
+                      Your score: {quizScore} out of {questions.length}
+                    </p>
+                    <p style={{ fontSize: '16px', color: '#4b5563' }}>
+                      {quizScore >= Math.ceil(questions.length * 0.8) 
+                        ? 'Congratulations! You passed the quiz.' 
+                        : 'Keep studying and try again.'}
+                    </p>
+                  </div>
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <button 
+                      onClick={handleCloseQuiz}
+                      style={{
+                        flex: 1,
+                        padding: '12px',
+                        backgroundColor: '#e5e7eb',
+                        color: '#4b5563',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Close
+                    </button>
+                    {remainingChances > 0 && quizScore < Math.ceil(questions.length * 0.8) && (
+                      <button 
+                        onClick={handleRetryQuiz}
+                        style={{
+                          flex: 1,
+                          padding: '12px',
+                          backgroundColor: '#0f766e',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '6px',
+                          fontSize: '16px',
+                          fontWeight: '600',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Try Again ({remainingChances} left)
+                      </button>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+      <style>
+      {`
+        .lesson-pdf-frame {
+          width: 100% !important;
+          min-height: 400px !important;
+          max-height: 75vh !important;
+          border: 1px solid #e5e7eb !important;
+          border-radius: 8px !important;
+          background: white !important;
+        }
+        @media (max-width: 768px) {
+          .lesson-pdf-frame {
+            height: 60vh !important;
+            min-height: 250px !important;
+            max-height: 75vh !important;
+          }
+        }
+      `}
+      </style>
+    </>
+  );
+};
+
+export default LessonPage;
